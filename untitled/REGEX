@@ -1,0 +1,7 @@
+ name validator = ((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+)
+
+ Variable deceleration = ((final\s+)?(int|boolean|double|String|char))
+
+ possible assignment values = 'z.+'|".+"|(\d+(.*\d+)*)|((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+)\s*
+
+ method name = void\s+(((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))\s*
