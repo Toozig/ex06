@@ -1,7 +1,11 @@
- name validator = ((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+)
+ name validator = \s*((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+)
 
- Variable deceleration = ((final\s+)?(int|boolean|double|String|char))
+ Variable deceleration = \s*((final\s+)?(int|boolean|double|String|char))
 
- possible assignment values = 'z.+'|".+"|(\d+(.*\d+)*)|((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+)\s*
+ possible assignment values = \s*'z.+'|".+"|(\d+(.*\d+)*)|((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+)\s*
 
- method name = void\s+(((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))\s*
+ method name = \s*void\s+(((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))\s*
+
+method call = \s*(((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))\s*\(((\s*((([a-z]|[A-Z])+)\w*)\s*|(_+([a-z]|[A-Z]|\d)+))(\)\s*;)?|(\s*\)\s*;))
+
+method decleration = \s*void\s+(((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))\s*\(((((final\s+)?(int|boolean|double|String|char))\s+((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))(\)\s*{)?|(\s*\)\s*{))
