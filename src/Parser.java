@@ -25,42 +25,65 @@ public class Parser {
     public static final int OUTER_SCOPE = 0;
     public static final int FIRST_LINE = 0;
     public static final int CATALAN = 1;
+    public static final String EmptyLine = " *";
+    public static final String EMPTY_LINE = "Empty line";
     private String VariableDecleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
     private String Names = "\\s*((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+)";
     private List<String> javaDoc;
-    private String MethodDecleration = "\\s*void\\s+(" + Names + ")\\s*\\(((" +
-            VariableDecleration + "\\s+" + Names + ")(\\)\\s*\\{)?|(\\s*\\)\\s*\\{))";
-    private String MethodCall = "\\s*(" + Names + ")\\s*\\(((" + Names + ")(\\)\\s*;)?|(\\s*\\)\\s*;))";
-    private String VariableAssignment = "\\s*(" + Names + ")\\s*=\\s*(((" + Names + "))|(\\d+(.\\d+)?|(\\\"[\\w\\W]+\\\")))";
-    private String IfWhile = "\\s*(if|while)\\s*\\(.+\\)\\s*\\{";
-    private String returnVar = "\\s*return\\s*";
+    private String MethodDecleration =  "\\s*void\\s+(" + Names + ")\\s*\\(("+ VariableDecleration +
+            "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+\\s*)\\s*))?(\\s*\\)\\s*\\{)?\\s*";
+    private String MethodCall = "\\s*(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\" +
+            "(((\\s*((([a-z]|[A-Z])+)\\w*)\\s*|(_+([a-z]|[A-Z]|\\d)+))(\\)\\s*;)?|(\\s*\\)\\s*;))";
+    private String VariableAssignment = "\\s*(" + Names + ")\\s*=\\s*(((" + Names + "))" +
+            "|(-?\\d+(.\\d+)?|(\\\"[\\w\\W]+\\\")||\\\'[\\w\\W]+\\\'))\\s*\\;?";
+    private String IfWhile = "\\s*(if|while)\\s*((\\(.+\\)\\s*\\{\\s*)|\\(\\s*\\s*" +
+            "(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\((-?\\d)+(\\.\\d+)?)";
+    private String returnVar = "\\s*return\\s*;\\s*";
     private String ScopeClosing = "\\s*}\\s*";
-    private String Note = "\\\\\\.*";
+    private String Note = "^\\/\\/.*";
+    private String VaribelCreation = VariableDecleration +"\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))" +
+            "\\s*(=\\s*(-?\\d+.(\\d+)?|\\\"[\\w\\W]+\\\"|\\\'[\\w\\W]+\\\'|"+ Names +"))?\\s*;?";
     private Scope curScope;
+
+
+
+
+
+
 
 
     public Parser(String sJavaFilePath) throws src.MyExceptions {
         javaDoc = convertToStringArr(sJavaFilePath);
     }
 
+    public List<String> checker() {
+        ArrayList<String> re = new ArrayList<>();
+        for (String line : javaDoc) {
+            String[] splitString = line.split(COMMA);
+            String lineDefiner = lineDefining(splitString[0]);
+            re.add(lineDefiner);
+        }
+             return re;
+    }
     protected Scope globalScopeCreator() {
         Scope globalScope = new Scope(null, javaDoc);
         curScope = globalScope;
-        for (int i = 0; i <= javaDoc.size(); i++) {
+        for (int i = 0; i < javaDoc.size(); i++) {
             String line = javaDoc.get(i);
             String[] splitString = line.split(COMMA);
             String lineDefiner = lineDefining(splitString[0]);
             switch (lineDefiner) {
                 case VARIABLE:
-                    parseVar(splitString);
+//                    parseVar(splitString);
                     break;
                 case METHOD_DECLARE:
-                    Scope innerScope = parseMethod(splitString, i);
+//                    Scope innerScope = parseMethod(splitString, i);
                     break;
                 case VARIABLE_ASSIGNMENT:
-                    assignVariable(splitString);
+//                    assignVariable(splitString);
                     break;
                 case NOTE:
+                case EMPTY_LINE:
                     break;
                 default:
                     // todo exception handling
@@ -126,7 +149,7 @@ public class Parser {
      *
      * @return Array of Strings.
      */
-    private List<String> convertToStringArr(String path) throws MyExceptions {
+    protected List<String> convertToStringArr(String path) throws MyExceptions {
 
         try {
             Path filePath = get(path);
@@ -140,55 +163,68 @@ public class Parser {
     }
 
     private String lineDefining(String line) {
-        Pattern pattern = Pattern.compile(VariableDecleration);
+        Pattern pattern = Pattern.compile(VaribelCreation);
         Matcher matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return VARIABLE;
         }
         pattern = Pattern.compile(MethodDecleration);
+        matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return METHOD_DECLARE;
         }
         pattern = Pattern.compile(MethodCall);
+        matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return METHOD_CALL;
         }
         pattern = Pattern.compile(VariableAssignment);
+        matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return VARIABLE_ASSIGNMENT;
         }
         pattern = Pattern.compile(IfWhile);
+        matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return IF_WHILE_BLOCK;
         }
         pattern = Pattern.compile(returnVar);
+        matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return RETURN;
         }
         pattern = Pattern.compile(ScopeClosing);
+        matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return SCOPE_CLOSING;
         }
-        String notePattered; //in case the note is in innerScope
-        notePattered = notePatteredCreator();
-        pattern = Pattern.compile(notePattered);
+//        String notePattered; //in case the note is in innerScope
+//        notePattered = notePatteredCreator();
+        pattern = Pattern.compile(Note);
+        matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return NOTE;
-        } else {
+        }
+        pattern = Pattern.compile(EmptyLine);
+        matcher = pattern.matcher(line);
+        if(matcher.matches()){
+            return EMPTY_LINE;
+        }
+        else {
             return LINE_ERROR;
         }
     }
 
-    private String notePatteredCreator() {
-        int outerScope = OUTER_SCOPE;
-        Scope father = curScope.getFather();
-        while (father != null) {
-            outerScope++;
-            father = father.getFather();
-        }
-        String indentation = INDENTATION;
-        indentation = new String(new char[outerScope]).replace("\0", indentation);
-        return NO_CHAR_BEFORE + indentation + Note;
-    }
+//    private String notePatteredCreator() {
+//        int outerScope = OUTER_SCOPE;
+//        Scope father = curScope.getFather();
+//        while (father != null) {
+//            outerScope++;
+//            father = father.getFather();
+//        }
+//        String indentation = INDENTATION;
+//        indentation = new String(new char[outerScope]).replace("\0", indentation);
+//        return NO_CHAR_BEFORE + indentation + Note;
+//    }
 }
 
