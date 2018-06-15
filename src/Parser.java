@@ -1,5 +1,4 @@
-package src;
-
+import src.MyExceptions;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,6 +10,21 @@ import java.util.regex.Pattern;
 import static java.nio.file.Paths.get;
 
 public class Parser {
+    public static final String VARIABLE = "Variable";
+    public static final String METHOD_DECLARE = "MethodDeclare";
+    public static final String VARIABLE_ASSIGNMENT = "VariableAssignment";
+    public static final String NOTE = "Note";
+    public static final String COMMA = ",";
+    public static final String IF_WHILE_BLOCK = "IfWhileBlock";
+    public static final String SCOPE_CLOSING = "ScopeClosing";
+    public static final String METHOD_CALL = "MethodCall";
+    public static final String RETURN = "Return";
+    public static final String LINE_ERROR = "lineError";
+    public static final String INDENTATION = "    ";
+    public static final String NO_CHAR_BEFORE = "^";
+    public static final int OUTER_SCOPE = 0;
+    public static final int FIRST_LINE = 0;
+    public static final int CATALAN = 1;
     private String VariableDecleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
     private String Names = "\\s*((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+)";
     private List<String> javaDoc;
@@ -25,7 +39,7 @@ public class Parser {
     private Scope curScope;
 
 
-    public Parser(String sJavaFilePath) throws MyExceptions {
+    public Parser(String sJavaFilePath) throws src.MyExceptions {
         javaDoc = convertToStringArr(sJavaFilePath);
     }
 
@@ -34,21 +48,19 @@ public class Parser {
         curScope = globalScope;
         for (int i = 0; i <= javaDoc.size(); i++) {
             String line = javaDoc.get(i);
-            String[] splitString = line.split(",");
+            String[] splitString = line.split(COMMA);
             String lineDefiner = lineDefining(splitString[0]);
             switch (lineDefiner) {
-                case "Variable":
+                case VARIABLE:
                     parseVar(splitString);
                     break;
-                case "MethodDeclare":
+                case METHOD_DECLARE:
                     Scope innerScope = parseMethod(splitString, i);
                     break;
-                case "IfWhileBlock":
-                    parseCondition(splitString, i);
-                    break;
-                case "VariableAssignment":
+                case VARIABLE_ASSIGNMENT:
                     assignVariable(splitString);
-                case "Note":
+                    break;
+                case NOTE:
                     break;
                 default:
                     // todo exception handling
@@ -64,18 +76,18 @@ public class Parser {
     }
 
     private Scope createInnerScope(List<String> scopeText, int index) {
-        int catalan = 1;
+        int catalan = CATALAN;
         ArrayList<String> innerScope = new ArrayList<>();
         innerScope.add(scopeText.get(index));
-        while (catalan != 0) {
+        while (catalan != OUTER_SCOPE) {
             index++;
-            String[] line = scopeText.get(index).split(",");
-            String lineDefiner = lineDefining(line[0]);
-            if (lineDefiner.equals("MethodDeclare") || lineDefiner.equals("IfWhileBlock")) {
+            String[] line = scopeText.get(index).split(COMMA);
+            String lineDefiner = lineDefining(line[FIRST_LINE]);
+            if (lineDefiner.equals(METHOD_DECLARE) || lineDefiner.equals(IF_WHILE_BLOCK)) {
                 catalan++;
             }
             innerScope.add(scopeText.get(index));
-            if (lineDefiner.equals("ScopeClosing")) {
+            if (lineDefiner.equals(SCOPE_CLOSING)) {
                 catalan--;
             }
         }
@@ -106,7 +118,6 @@ public class Parser {
 
     // todo method that takes a line of var deceleration and turns it into varibales
     private void parseVar(String[] varLine) {
-
     }
 
 
@@ -132,52 +143,52 @@ public class Parser {
         Pattern pattern = Pattern.compile(VariableDecleration);
         Matcher matcher = pattern.matcher(line);
         if (matcher.matches()) {
-            return "Variable";
+            return VARIABLE;
         }
         pattern = Pattern.compile(MethodDecleration);
         if (matcher.matches()) {
-            return "MethodDeclare";
+            return METHOD_DECLARE;
         }
         pattern = Pattern.compile(MethodCall);
         if (matcher.matches()) {
-            return "MethodCall";
+            return METHOD_CALL;
         }
         pattern = Pattern.compile(VariableAssignment);
         if (matcher.matches()) {
-            return "VariableAssignment";
+            return VARIABLE_ASSIGNMENT;
         }
         pattern = Pattern.compile(IfWhile);
         if (matcher.matches()) {
-            return "IfWhileBlock";
+            return IF_WHILE_BLOCK;
         }
         pattern = Pattern.compile(returnVar);
         if (matcher.matches()) {
-            return "Return";
+            return RETURN;
         }
         pattern = Pattern.compile(ScopeClosing);
         if (matcher.matches()) {
-            return "ScopeClosing";
+            return SCOPE_CLOSING;
         }
         String notePattered; //in case the note is in innerScope
         notePattered = notePatteredCreator();
         pattern = Pattern.compile(notePattered);
         if (matcher.matches()) {
-            return "Note";
+            return NOTE;
         } else {
-            return "lineError";
+            return LINE_ERROR;
         }
     }
 
     private String notePatteredCreator() {
-        int outerScope = 0;
+        int outerScope = OUTER_SCOPE;
         Scope father = curScope.getFather();
         while (father != null) {
             outerScope++;
             father = father.getFather();
         }
-        String indentation = "    ";
+        String indentation = INDENTATION;
         indentation = new String(new char[outerScope]).replace("\0", indentation);
-        return "^" + indentation + Note;
+        return NO_CHAR_BEFORE + indentation + Note;
     }
 }
 

@@ -1,4 +1,4 @@
-package src;
+import src.Variables;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ public class  Scope {
 
     private List<String> textArray;
     private Scope father;
-    private ArrayList<Variables> varArray;
+    private ArrayList<src.Variables> varArray;
     private ArrayList<Scope> innerScopeArr;
 
     public Scope(Scope father, List<String> text){
