@@ -5,14 +5,21 @@ import java.util.List;
 
 public class  Scope {
 
-    protected List<String> textArray;
+    private List<String> textArray;
     private Scope father;
     private ArrayList<Variables> varArray;
+    private ArrayList<Scope> innerScopeArr;
 
-    public Scope(Scope father){
+    public Scope(Scope father, List<String> text){
         this.textArray = new ArrayList<>();
         varArray = new ArrayList<>();
         this.father = father;
+        innerScopeArr = new ArrayList<>();
+        textArray = text;
+    }
+
+    public List<String> getTextArray() {
+        return textArray;
     }
 
     public Scope getFather() {
@@ -27,7 +34,7 @@ public class  Scope {
         }
         if(father == null){
             return null;
-        }
+            }
         else {
             return father.getVariable(variable);
         }
@@ -37,8 +44,13 @@ public class  Scope {
         return false;
     }
 
-    public void addVariabel(Variables var){
-        varArray.add(var);
+
+
+    protected void addVariable(String[] varLine){
+    }
+
+    protected void addInnerScope(Scope innerScope){
+        innerScopeArr.add(innerScope);
     }
 
 
