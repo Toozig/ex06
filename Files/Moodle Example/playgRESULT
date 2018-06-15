@@ -1,22 +1,22 @@
-final char c = 'b'; ---> Variable
+// some int member ---> Note
+final int a = 5; ---> Variable
  ---> Empty line
-// comment ---> Note
+//Another int member ---> Note
+final int b = a; ---> Variable
  ---> Empty line
-void foo() { ---> MethodDeclare
-	while(true) { ---> IfWhileBlock
-		if (boo(1,2,3,"S")) { ---> IfWhileBlock
-			doo(); ---> MethodCall
+// now - a string member ---> Note
+String s; ---> Variable
+ ---> Empty line
+int boo(int a, int b, String s) { ---> lineError
+	if (true) { ---> IfWhileBlock
+		boo(1,2,"hello"); ---> lineError
+		while (false) { ---> IfWhileBlock
+			soo(true); ---> MethodCall
 		} ---> ScopeClosing
 	} ---> ScopeClosing
- ---> Empty line
 	return; ---> Return
 } ---> ScopeClosing
  ---> Empty line
-void boo(int a, int b, int c1, String d) { ---> MethodDeclare
-	char e = c; ---> Variable
-	return; ---> Return
-} ---> ScopeClosing
- ---> Empty line
-void doo(int a1, int a2) { ---> MethodDeclare
+void soo(boolean b) { ---> MethodDeclare
 	return; ---> Return
 } ---> ScopeClosing
