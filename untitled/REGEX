@@ -6,6 +6,12 @@
 
  method name = \s*void\s+(((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))\s*
 
+
+int or double = \d+.\d+?
+
 method call = \s*(((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))\s*\(((\s*((([a-z]|[A-Z])+)\w*)\s*|(_+([a-z]|[A-Z]|\d)+))(\)\s*;)?|(\s*\)\s*;))
 
-method decleration = \s*void\s+(((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))\s*\(((((final\s+)?(int|boolean|double|String|char))\s+((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))(\)\s*{)?|(\s*\)\s*{))
+
+
+Var decleration = \s*((final\s+)?(int|boolean|double|String|char))\s+(((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))\s*(=\s*(\d+.(\d+)?|\"[\w\W]+\"|\'[\w\W]+\'|\s*((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+)))?\s*;?
+method decleration = \s*void\s+(\s*((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))\s*\(\s*((final\s+)?(int|boolean|double|String|char))\s+(((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+\s*)\s*)(\s*\)\s*\{)?\s*

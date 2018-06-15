@@ -1,3 +1,4 @@
+import src.MyExceptions;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,25 +34,32 @@ public class Parser {
     public static final String CHAR = "char";
     public static final String STRING = "String";
     public static final String INCOMPATIBLE_TYPE = "incompatibleType";
+    public static final String EmptyLine = " *";
+    public static final String EMPTY_LINE = "Empty line";
     private String VariableDecleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
     private String Names = "\\s*((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+)";
     private List<String> javaDoc;
-    private String MethodDecleration = "\\s*void\\s+(" + Names + ")\\s*\\(((" +
-            VariableDecleration + "\\s+" + Names + ")(\\)\\s*\\{)?|(\\s*\\)\\s*\\{))";
-    private String MethodCall = "\\s*(" + Names + ")\\s*\\(((" + Names + ")(\\)\\s*;)?|(\\s*\\)\\s*;))";
-    private String VariableAssignment = "\\s*(" + Names + ")\\s*=\\s*(((" + Names + "))|(\\d+(.\\d+)?|(\\\"[\\w\\W]+\\\")))";
-    private String IfWhile = "\\s*(if|while)\\s*\\(.+\\)\\s*\\{";
-    private String returnVar = "\\s*return\\s*";
+    private String MethodDecleration =  "\\s*void\\s+(" + Names + ")\\s*\\(("+ VariableDecleration +
+            "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+\\s*)\\s*))?(\\s*\\)\\s*\\{)?\\s*";
+    private String MethodCall = "\\s*(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\" +
+            "(((\\s*((([a-z]|[A-Z])+)\\w*)\\s*|(_+([a-z]|[A-Z]|\\d)+))(\\)\\s*;)?|(\\s*\\)\\s*;))";
+    private String VariableAssignment = "\\s*(" + Names + ")\\s*=\\s*(((" + Names + "))" +
+            "|(-?\\d+(.\\d+)?|(\\\"[\\w\\W]+\\\")||\\\'[\\w\\W]+\\\'))\\s*\\;?";
+    private String IfWhile = "\\s*(if|while)\\s*((\\(.+\\)\\s*\\{\\s*)|\\(\\s*\\s*" +
+            "(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\((-?\\d)+(\\.\\d+)?)";
+    private String returnVar = "\\s*return\\s*;\\s*";
     private String ScopeClosing = "\\s*}\\s*";
-    private String Note = "\\\\\\.*";
+    private String Note = "^\\/\\/.*";
+    private String VaribelCreation = VariableDecleration +"\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))" +
+            "\\s*(=\\s*(-?\\d+.(\\d+)?|\\\"[\\w\\W]+\\\"|\\\'[\\w\\W]+\\\'|"+ Names +"))?\\s*;?";
     private Scope curScope;
 
 
-    public Parser(String sJavaFilePath) {
+    public Parser(String sJavaFilePath) throws src.MyExceptions {
         javaDoc = convertToStringArr(sJavaFilePath);
     }
 
-    protected Scope globalScopeCreator() throws ClassNotFoundException {
+    protected Scope globalScopeCreator() {
         Scope globalScope = new Scope(null, javaDoc);
         curScope = globalScope;
         for (int i = 0; i <= javaDoc.size(); i++) {
@@ -245,7 +253,7 @@ public class Parser {
      *
      * @return Array of Strings.
      */
-    private List<String> convertToStringArr(String path) {
+    private List<String> convertToStringArr(String path) throws MyExceptions {
 
         try {
             Path filePath = get(path);
@@ -259,7 +267,7 @@ public class Parser {
     }
 
     private String lineDefining(String line) {
-        Pattern pattern = Pattern.compile(VariableDecleration);
+        Pattern pattern = Pattern.compile(VaribelCreation);
         Matcher matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return VARIABLE;
@@ -288,12 +296,19 @@ public class Parser {
         if (matcher.matches()) {
             return SCOPE_CLOSING;
         }
-        String notePattered; //in case the note is in innerScope
-        notePattered = notePatteredCreator();
-        pattern = Pattern.compile(notePattered);
+//        String notePattered; //in case the note is in innerScope
+//        notePattered = notePatteredCreator();
+        pattern = Pattern.compile(Note);
+        matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return NOTE;
-        } else {
+        }
+        pattern = Pattern.compile(EmptyLine);
+        matcher = pattern.matcher(line);
+        if(matcher.matches()){
+            return EMPTY_LINE;
+        }
+        else {
             return LINE_ERROR;
         }
     }
@@ -308,22 +323,6 @@ public class Parser {
         String indentation = INDENTATION;
         indentation = new String(new char[outerScope]).replace("\0", indentation);
         return NO_CHAR_BEFORE + indentation + Note;
-    }
-
-    public static void main(String[] args) {
-        Parser parse = new Parser("C:\\Users\\user\\Documents\\university\\Semester B\\OOP\\ex06\\src\\gibrish");
-        parse.curScope = new Scope(null, parse.javaDoc);
-        String arg = "String a54353t$%@% = \"bbbb\",b,a,c";
-        String[] arga = arg.split(",");
-        String arg2 = "b = \"arbel\",a = \"ido\",c = \"geffen\"";
-        String[] arga2 = arg2.split(",");
-        parse.parseVar(arga);
-        parse.assignVar(arga2);
-
-        for (Variables var : parse.curScope.getVarArray()) {
-            System.out.println(var.getName() + " " + var.getType() + " " + var.getData() + " " + var.getisFinal());
-        }
-
     }
 }
 
