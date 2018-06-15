@@ -1,3 +1,4 @@
+import src.MyExceptions;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,51 +25,65 @@ public class Parser {
     public static final int OUTER_SCOPE = 0;
     public static final int FIRST_LINE = 0;
     public static final int CATALAN = 1;
-    public static final String WHITE_SPACE = "\\s+";
-    public static final String FINAL = "final";
-    public static final int FIRST_VAR_DECLARE = 0;
-    public static final String INT = "int";
-    public static final String DOUBLE = "double";
-    public static final String BOOLEAN = "boolean";
-    public static final String CHAR = "char";
-    public static final String STRING = "String";
-    public static final String INCOMPATIBLE_TYPE = "incompatibleType";
+    public static final String EmptyLine = " *";
+    public static final String EMPTY_LINE = "Empty line";
     private String VariableDecleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
     private String Names = "\\s*((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+)";
     private List<String> javaDoc;
-    private String MethodDecleration = "\\s*void\\s+(" + Names + ")\\s*\\(((" +
-            VariableDecleration + "\\s+" + Names + ")(\\)\\s*\\{)?|(\\s*\\)\\s*\\{))";
-    private String MethodCall = "\\s*(" + Names + ")\\s*\\(((" + Names + ")(\\)\\s*;)?|(\\s*\\)\\s*;))";
-    private String VariableAssignment = "\\s*(" + Names + ")\\s*=\\s*(((" + Names + "))|(\\d+(.\\d+)?|(\\\"[\\w\\W]+\\\")))";
-    private String IfWhile = "\\s*(if|while)\\s*\\(.+\\)\\s*\\{";
-    private String returnVar = "\\s*return\\s*";
+    private String MethodDecleration =  "\\s*void\\s+(" + Names + ")\\s*\\(("+ VariableDecleration +
+            "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+\\s*)\\s*))?(\\s*\\)\\s*\\{)?\\s*";
+    private String MethodCall = "\\s*(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\" +
+            "(((\\s*((([a-z]|[A-Z])+)\\w*)\\s*|(_+([a-z]|[A-Z]|\\d)+))(\\)\\s*;)?|(\\s*\\)\\s*;))";
+    private String VariableAssignment = "\\s*(" + Names + ")\\s*=\\s*(((" + Names + "))" +
+            "|(-?\\d+(.\\d+)?|(\\\"[\\w\\W]+\\\")||\\\'[\\w\\W]+\\\'))\\s*\\;?";
+    private String IfWhile = "\\s*(if|while)\\s*((\\(.+\\)\\s*\\{\\s*)|\\(\\s*\\s*" +
+            "(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\((-?\\d)+(\\.\\d+)?)";
+    private String returnVar = "\\s*return\\s*;\\s*";
     private String ScopeClosing = "\\s*}\\s*";
-    private String Note = "\\\\\\.*";
+    private String Note = "^\\/\\/.*";
+    private String VaribelCreation = VariableDecleration +"\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))" +
+            "\\s*(=\\s*(-?\\d+.(\\d+)?|\\\"[\\w\\W]+\\\"|\\\'[\\w\\W]+\\\'|"+ Names +"))?\\s*;?";
     private Scope curScope;
 
 
-    public Parser(String sJavaFilePath) {
+
+
+
+
+
+
+    public Parser(String sJavaFilePath) throws src.MyExceptions {
         javaDoc = convertToStringArr(sJavaFilePath);
     }
 
-    protected Scope globalScopeCreator() throws ClassNotFoundException {
+    public List<String> checker() {
+        ArrayList<String> re = new ArrayList<>();
+        for (String line : javaDoc) {
+            String[] splitString = line.split(COMMA);
+            String lineDefiner = lineDefining(splitString[0]);
+            re.add(lineDefiner);
+        }
+             return re;
+    }
+    protected Scope globalScopeCreator() {
         Scope globalScope = new Scope(null, javaDoc);
         curScope = globalScope;
-        for (int i = 0; i <= javaDoc.size(); i++) {
+        for (int i = 0; i < javaDoc.size(); i++) {
             String line = javaDoc.get(i);
             String[] splitString = line.split(COMMA);
             String lineDefiner = lineDefining(splitString[0]);
             switch (lineDefiner) {
                 case VARIABLE:
-                    parseVar(splitString);
+//                    parseVar(splitString);
                     break;
                 case METHOD_DECLARE:
-                    Scope innerScope = parseMethod(splitString, i);
+//                    Scope innerScope = parseMethod(splitString, i);
                     break;
                 case VARIABLE_ASSIGNMENT:
-                    assignVariable(splitString);
+//                    assignVariable(splitString);
                     break;
                 case NOTE:
+                case EMPTY_LINE:
                     break;
                 default:
                     // todo exception handling
@@ -124,128 +139,17 @@ public class Parser {
 
     }
 
-    private void assignVar(String[] varLine) {
-        for (String var : varLine) {
-            String[] varAssign = var.split(WHITE_SPACE);
-            String varName = varAssign[0];
-            String varValue = varAssign[2];
-            Variables variable = curScope.getVariable(varName);
-            if (variable != null && (!(variable.getisFinal()))) {
-                try {
-                    Object obj = dataAccordingToType(varValue, variable.getType());
-                    variable.setData(obj);
-                } catch (NumberFormatException e) {
-                    Variables existVar = curScope.getVariable(varValue);
-                    if(existVar!= null &&existVar.getType().equals(variable.getType())){
-                        variable.setData(existVar.getData());
-                    }
-                    else{
-                        throw new NumberFormatException();
-                    }
-
-                }
-
-            }
-        }
-    }
-
-
     // todo method that takes a line of var deceleration and turns it into varibales
     private void parseVar(String[] varLine) {
-        String[] variableString = varLine[FIRST_VAR_DECLARE].split(WHITE_SPACE);
-        Variables var;
-        Object data = null;
-        String name = "";
-        String type = "";
-        boolean isFinal = false;
-        switch (variableString.length) {
-            case 2:
-                type = variableString[0];
-                name = variableString[1];
-                break;
-
-//                case 3:
-//                    type = variableString[1];
-//                    name = variableString[2];
-//                    isFinal = variableString[0].equals(FINAL);
-//                    break;
-            case 4:
-                type = variableString[0];
-                name = variableString[1];
-                try {
-                    data = dataAccordingToType(variableString[3], type);
-                } catch (NumberFormatException e) {
-                    data = CheckIfExistVar(variableString[3], type);
-                }
-                break;
-            case 5:
-                isFinal = variableString[0].equals(FINAL);
-                type = variableString[1];
-                name = variableString[2];
-                try {
-                    data = dataAccordingToType(variableString[4], type);
-                } catch (NumberFormatException e) {
-                    data = CheckIfExistVar(variableString[4], type);
-                }
-                break;
-        }
-        var = new Variables(name, type, data, isFinal);
-        curScope.addVariable(var);
-        for (int i = 1; i < varLine.length; i++) {
-            variableString = varLine[i].split(WHITE_SPACE);
-            data = null;
-            name = variableString[0];
-            switch (variableString.length) {
-                case 3:
-                    try {
-                        data = dataAccordingToType(variableString[2], type);
-                    } catch (NumberFormatException e) {
-                        data = CheckIfExistVar(variableString[2], type);
-                    }
-            }
-            var = new Variables(name, type, data, isFinal);
-            curScope.addVariable(var);
-
-
-        }
-
     }
 
-    private Object dataAccordingToType(String data, String type) {
-        switch (type) {
-            case INT:
-                return Integer.parseInt(data);
-            case DOUBLE:
-                return Double.parseDouble(data);
-            case BOOLEAN:
-                return Boolean.parseBoolean(data);
-            case CHAR:
-            case STRING:
-                if (data.startsWith("\"") && data.endsWith("\"")) {
-                    return data.replace("\"", "");
-                } else {
-                    throw new NumberFormatException();
-                }
-        }
-        throw new NumberFormatException();
-    }
-
-    private String CheckIfExistVar(String varData, String type) {
-        Variables existVar = curScope.getVariable(varData);
-        if (existVar != null) {
-            if (existVar.getType().equals(type)) {
-                return String.valueOf(existVar.getData());
-            }
-        }
-        return null;
-    }
 
     /**
      * This method takes a text file and turns it into an array of String, each index contains line from the txt
      *
      * @return Array of Strings.
      */
-    private List<String> convertToStringArr(String path) {
+    protected List<String> convertToStringArr(String path) throws MyExceptions {
 
         try {
             Path filePath = get(path);
@@ -259,71 +163,68 @@ public class Parser {
     }
 
     private String lineDefining(String line) {
-        Pattern pattern = Pattern.compile(VariableDecleration);
+        Pattern pattern = Pattern.compile(VaribelCreation);
         Matcher matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return VARIABLE;
         }
         pattern = Pattern.compile(MethodDecleration);
+        matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return METHOD_DECLARE;
         }
         pattern = Pattern.compile(MethodCall);
+        matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return METHOD_CALL;
         }
         pattern = Pattern.compile(VariableAssignment);
+        matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return VARIABLE_ASSIGNMENT;
         }
         pattern = Pattern.compile(IfWhile);
+        matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return IF_WHILE_BLOCK;
         }
         pattern = Pattern.compile(returnVar);
+        matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return RETURN;
         }
         pattern = Pattern.compile(ScopeClosing);
+        matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return SCOPE_CLOSING;
         }
-        String notePattered; //in case the note is in innerScope
-        notePattered = notePatteredCreator();
-        pattern = Pattern.compile(notePattered);
+//        String notePattered; //in case the note is in innerScope
+//        notePattered = notePatteredCreator();
+        pattern = Pattern.compile(Note);
+        matcher = pattern.matcher(line);
         if (matcher.matches()) {
             return NOTE;
-        } else {
+        }
+        pattern = Pattern.compile(EmptyLine);
+        matcher = pattern.matcher(line);
+        if(matcher.matches()){
+            return EMPTY_LINE;
+        }
+        else {
             return LINE_ERROR;
         }
     }
 
-    private String notePatteredCreator() {
-        int outerScope = OUTER_SCOPE;
-        Scope father = curScope.getFather();
-        while (father != null) {
-            outerScope++;
-            father = father.getFather();
-        }
-        String indentation = INDENTATION;
-        indentation = new String(new char[outerScope]).replace("\0", indentation);
-        return NO_CHAR_BEFORE + indentation + Note;
-    }
-
-    public static void main(String[] args) {
-        Parser parse = new Parser("C:\\Users\\user\\Documents\\university\\Semester B\\OOP\\ex06\\src\\gibrish");
-        parse.curScope = new Scope(null, parse.javaDoc);
-        String arg = "String a54353t$%@% = \"bbbb\",b,a,c";
-        String[] arga = arg.split(",");
-        String arg2 = "b = \"arbel\",a = \"ido\",c = \"geffen\"";
-        String[] arga2 = arg2.split(",");
-        parse.parseVar(arga);
-        parse.assignVar(arga2);
-
-        for (Variables var : parse.curScope.getVarArray()) {
-            System.out.println(var.getName() + " " + var.getType() + " " + var.getData() + " " + var.getisFinal());
-        }
-
-    }
+//    private String notePatteredCreator() {
+//        int outerScope = OUTER_SCOPE;
+//        Scope father = curScope.getFather();
+//        while (father != null) {
+//            outerScope++;
+//            father = father.getFather();
+//        }
+//        String indentation = INDENTATION;
+//        indentation = new String(new char[outerScope]).replace("\0", indentation);
+//        return NO_CHAR_BEFORE + indentation + Note;
+//    }
 }
 
