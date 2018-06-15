@@ -1,5 +1,3 @@
-import src.Variables;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +5,7 @@ public class  Scope {
 
     private List<String> textArray;
     private Scope father;
-    private ArrayList<src.Variables> varArray;
+    private ArrayList<Variables> varArray;
     private ArrayList<Scope> innerScopeArr;
 
     public Scope(Scope father, List<String> text){
@@ -25,7 +23,9 @@ public class  Scope {
     public Scope getFather() {
         return father;
     }
-
+    public ArrayList<Variables> getVarArray(){
+        return varArray;
+    }
     public Variables getVariable(String variable){
         for (Variables var: varArray) {
             if(var.getName().equals(variable)){
@@ -46,7 +46,8 @@ public class  Scope {
 
 
 
-    protected void addVariable(String[] varLine){
+    protected void addVariable(Variables var){
+        varArray.add(var);
     }
 
     protected void addInnerScope(Scope innerScope){

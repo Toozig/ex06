@@ -4,9 +4,11 @@ import java.lang.reflect.Method;
 public class Playground {
 
     public static void main(String[] args) throws ClassNotFoundException {
-        int x  = 3;
-        Class c =  Class.forName("Files/google.java");
-        Method[] jaja = c.getMethods();
+        String var = "int   a   =   4";
+        String[] vara =var.split("\\s+");
+        for (String item:vara){
+            System.out.println(item);
+        }
     }
 
 }

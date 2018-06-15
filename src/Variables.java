@@ -1,6 +1,5 @@
-package src;
 
-abstract public class Variables<T> {
+public class Variables<T> {
 
 
     private String name;
@@ -17,6 +16,10 @@ abstract public class Variables<T> {
 
     public String getName(){
         return name;
+    }
+
+    public boolean getisFinal() {
+        return isFinal;
     }
 
     public String getType() {
