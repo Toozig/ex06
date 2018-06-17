@@ -53,8 +53,7 @@ public class Parser {
     final private String ScopeClosing = "\\s*}\\s*";
     final private String Note = "^\\/\\/.*";
     final private String VaribelCreation = VariableDecleration + "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))" +
-            "\\s*(=\\s*(-?\\d+.(\\d+)?|\\\"[\\w\\W]+\\\"|\\\'[\\w\\W]+\\\'|" + Names + "))?\\s*;?";
-    private Scope curScope;
+            "\\s*(=\\s*(-?\\d+(.\\d+)?|\\\"[\\w\\W]+\\\"|\\\'[\\w\\W]+\\\'|" + Names + "))?\\s*;?";
 
 
         /**
@@ -62,9 +61,12 @@ public class Parser {
          * @param sJavaFilePath  simplified java document
          * @throws MyExceptions in case file is not legal txt document.
          */
-    public Parser(String sJavaFilePath) throws MyExceptions {
+        public Parser(String sJavaFilePath) throws MyExceptions {
             javaDoc = convertToStringArr(sJavaFilePath);
         }
+    public Parser() {
+        javaDoc = null;
+    }
 
 
         //
@@ -72,18 +74,19 @@ public class Parser {
 
 
 
-        private void assignVar (String[]varLine){
+        protected void assignVar (String line , Scope scope){
+            String[] varLine = line.split(COMMA);
             for (String var : varLine) {
                 String[] varAssign = var.split(WHITE_SPACE);
                 String varName = varAssign[0];
                 String varValue = varAssign[2];
-                Variables variable = curScope.getVariable(varName);
+                Variables variable = scope.getVariable(varName);
                 if (variable != null && (!(variable.getisFinal()))) {
                     try {
                         Object obj = dataAccordingToType(varValue, variable.getType());
                         variable.setData(obj);
                     } catch (NumberFormatException e) {
-                        Variables existVar = curScope.getVariable(varValue);
+                        Variables existVar = scope.getVariable(varValue);
                         if (existVar != null && existVar.getType().equals(variable.getType())) {
                             variable.setData(existVar.getData());
                         } else {
@@ -98,9 +101,12 @@ public class Parser {
 
 
         // todo method that takes a line of var deceleration and turns it into varibales
-        private void parseVar (String[]varLine){
+        protected void parseVar (String line,Scope scope){
+            String[] varLine = line.split(COMMA);
+            varLine[varLine.length-1] = varLine[varLine.length-1].replace(END_STATEMENT,"");
             String[] variableString = varLine[FIRST_VAR_DECLARE].split(WHITE_SPACE);
             Variables var;
+            ArrayList<Variables> variables;
             Object data = null;
             String name = "";
             String type = "";
@@ -110,19 +116,13 @@ public class Parser {
                     type = variableString[0];
                     name = variableString[1];
                     break;
-
-//                case 3:
-//                    type = variableString[1];
-//                    name = variableString[2];
-//                    isFinal = variableString[0].equals(FINAL);
-//                    break;
                 case 4:
                     type = variableString[0];
                     name = variableString[1];
                     try {
                         data = dataAccordingToType(variableString[3], type);
                     } catch (NumberFormatException e) {
-                        data = CheckIfExistVar(variableString[3], type);
+                        data = CheckIfExistVar(variableString[3], type,scope);
                     }
                     break;
                 case 5:
@@ -132,12 +132,12 @@ public class Parser {
                     try {
                         data = dataAccordingToType(variableString[4], type);
                     } catch (NumberFormatException e) {
-                        data = CheckIfExistVar(variableString[4], type);
+                        data = CheckIfExistVar(variableString[4], type,scope);
                     }
                     break;
             }
             var = new Variables(name, type, data, isFinal);
-            curScope.addVariable(var);
+            scope.addVariable(var);
             for (int i = 1; i < varLine.length; i++) {
                 variableString = varLine[i].split(WHITE_SPACE);
                 data = null;
@@ -147,11 +147,11 @@ public class Parser {
                         try {
                             data = dataAccordingToType(variableString[2], type);
                         } catch (NumberFormatException e) {
-                            data = CheckIfExistVar(variableString[2], type);
+                            data = CheckIfExistVar(variableString[2], type,scope);
                         }
                 }
                 var = new Variables(name, type, data, isFinal);
-                curScope.addVariable(var);
+                scope.addVariable(var);
 
 
             }
@@ -177,8 +177,8 @@ public class Parser {
             throw new NumberFormatException();
         }
 
-        private String CheckIfExistVar (String varData, String type){
-            Variables existVar = curScope.getVariable(varData);
+        private String CheckIfExistVar (String varData, String type,Scope scope){
+            Variables existVar = scope.getVariable(varData);
             if (existVar != null) {
                 if (existVar.getType().equals(type)) {
                     return String.valueOf(existVar.getData());
