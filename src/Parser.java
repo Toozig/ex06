@@ -1,7 +1,4 @@
-import com.sun.org.apache.xpath.internal.operations.Variable;
-import src.MyExceptions;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -50,7 +47,7 @@ public class Parser {
     private Scope curScope;
 
 
-    public Parser(String sJavaFilePath)  {
+    public Parser(String sJavaFilePath) {
         javaDoc = convertToStringArr(sJavaFilePath);
     }
 
@@ -127,91 +124,122 @@ public class Parser {
 
     }
 
-    // todo method that takes a line of var deceleration and turns it into varibales
-    private void parseVar(String[] varLine)  {
-            String[] variableString = varLine[FIRST_VAR_DECLARE].split(WHITE_SPACE);
-            Variables var;
-            Object data = null;
-            String name = "";
-            String type = "";
-            boolean isFinal = false;
-            switch (variableString.length) {
-                case 2:
-                    type = variableString[0];
-                    name = variableString[1];
-                    break;
+    private void assignVar(String[] varLine) {
+        for (String var : varLine) {
+            String[] varAssign = var.split(WHITE_SPACE);
+            String varName = varAssign[0];
+            String varValue = varAssign[2];
+            Variables variable = curScope.getVariable(varName);
+            if (variable != null && (!(variable.getisFinal()))) {
+                try {
+                    Object obj = dataAccordingToType(varValue, variable.getType());
+                    variable.setData(obj);
+                } catch (NumberFormatException e) {
+                    Variables existVar = curScope.getVariable(varValue);
+                    if(existVar!= null &&existVar.getType().equals(variable.getType())){
+                        variable.setData(existVar.getData());
+                    }
+                    else{
+                        throw new NumberFormatException();
+                    }
 
-                case 3:
-                    type = variableString[1];
-                    name = variableString[2];
-                    isFinal = variableString[0].equals(FINAL);
-                    break;
-                case 4:
-                    type = variableString[0];
-                    name = variableString[1];
-                    try{
-                    data = dataAccordingToType(variableString[3], type);}
-                    catch (NumberFormatException e){
-                        data = CheckIfExistVar(variableString[3],type);
-                    }
-                    break;
-                case 5:
-                    isFinal = variableString[0].equals(FINAL);
-                    type = variableString[1];
-                    name = variableString[2];
-                    try{
-                    data = dataAccordingToType(variableString[4], type);}
-                    catch (NumberFormatException e){
-                        data = CheckIfExistVar(variableString[4],type);
-                    }
-                    break;
+                }
+
             }
-            var = new Variables(name,type,data,isFinal);
+        }
+    }
+
+
+    // todo method that takes a line of var deceleration and turns it into varibales
+    private void parseVar(String[] varLine) {
+        String[] variableString = varLine[FIRST_VAR_DECLARE].split(WHITE_SPACE);
+        Variables var;
+        Object data = null;
+        String name = "";
+        String type = "";
+        boolean isFinal = false;
+        switch (variableString.length) {
+            case 2:
+                type = variableString[0];
+                name = variableString[1];
+                break;
+
+//                case 3:
+//                    type = variableString[1];
+//                    name = variableString[2];
+//                    isFinal = variableString[0].equals(FINAL);
+//                    break;
+            case 4:
+                type = variableString[0];
+                name = variableString[1];
+                try {
+                    data = dataAccordingToType(variableString[3], type);
+                } catch (NumberFormatException e) {
+                    data = CheckIfExistVar(variableString[3], type);
+                }
+                break;
+            case 5:
+                isFinal = variableString[0].equals(FINAL);
+                type = variableString[1];
+                name = variableString[2];
+                try {
+                    data = dataAccordingToType(variableString[4], type);
+                } catch (NumberFormatException e) {
+                    data = CheckIfExistVar(variableString[4], type);
+                }
+                break;
+        }
+        var = new Variables(name, type, data, isFinal);
+        curScope.addVariable(var);
+        for (int i = 1; i < varLine.length; i++) {
+            variableString = varLine[i].split(WHITE_SPACE);
+            data = null;
+            name = variableString[0];
+            switch (variableString.length) {
+                case 3:
+                    try {
+                        data = dataAccordingToType(variableString[2], type);
+                    } catch (NumberFormatException e) {
+                        data = CheckIfExistVar(variableString[2], type);
+                    }
+            }
+            var = new Variables(name, type, data, isFinal);
             curScope.addVariable(var);
-            for(int i =1; i<varLine.length;i++){
-                variableString = varLine[i].split(WHITE_SPACE);
-                data = null;
-                name = variableString[0];
-                switch (variableString.length){
-                   case 3:
-                       try{
-                        data = dataAccordingToType(variableString[2],type);}
-                       catch (NumberFormatException e){
-                           data = CheckIfExistVar(variableString[2],type);
-                       }                }
-                var = new Variables(name,type,data,isFinal);
-                curScope.addVariable(var);
 
 
         }
 
     }
-    private Object dataAccordingToType(String data,String type){
-        switch (type){
+
+    private Object dataAccordingToType(String data, String type) {
+        switch (type) {
             case INT:
                 return Integer.parseInt(data);
             case DOUBLE:
                 return Double.parseDouble(data);
             case BOOLEAN:
                 return Boolean.parseBoolean(data);
-            case CHAR: case STRING:
-                if (data.startsWith("\"")&&data.endsWith("\"")){
-                return data.replace("\"","");}
-                else{
+            case CHAR:
+            case STRING:
+                if (data.startsWith("\"") && data.endsWith("\"")) {
+                    return data.replace("\"", "");
+                } else {
                     throw new NumberFormatException();
                 }
         }
         throw new NumberFormatException();
     }
 
-    private String CheckIfExistVar (String varData,String type){
-    Variables existVar = curScope.getVariable(varData);
-                        if (existVar != null){
-        if (existVar.getType().equals(type)){
-            return String.valueOf(existVar.getData());
+    private String CheckIfExistVar(String varData, String type) {
+        Variables existVar = curScope.getVariable(varData);
+        if (existVar != null) {
+            if (existVar.getType().equals(type)) {
+                return String.valueOf(existVar.getData());
+            }
         }
+        return null;
     }
-    return null;}
+
     /**
      * This method takes a text file and turns it into an array of String, each index contains line from the txt
      *
@@ -281,18 +309,19 @@ public class Parser {
         indentation = new String(new char[outerScope]).replace("\0", indentation);
         return NO_CHAR_BEFORE + indentation + Note;
     }
-    public static void main (String[] args){
+
+    public static void main(String[] args) {
         Parser parse = new Parser("C:\\Users\\user\\Documents\\university\\Semester B\\OOP\\ex06\\src\\gibrish");
-        parse.curScope = new Scope(null,parse.javaDoc);
-        String arg = "final String a54353t$%@% = \"bbbb\",c = \"b\",a = c";
-        String[] arga= arg.split(",");
-        String arg2 = "String b = a54353t$%@%";
+        parse.curScope = new Scope(null, parse.javaDoc);
+        String arg = "String a54353t$%@% = \"bbbb\",b,a,c";
+        String[] arga = arg.split(",");
+        String arg2 = "b = \"arbel\",a = \"ido\",c = \"geffen\"";
         String[] arga2 = arg2.split(",");
         parse.parseVar(arga);
-        parse.parseVar(arga2);
+        parse.assignVar(arga2);
 
-        for(Variables var : parse.curScope.getVarArray()){
-            System.out.println(var.getName()+" "+var.getType()+" "+var.getData()+" "+var.getisFinal());
+        for (Variables var : parse.curScope.getVarArray()) {
+            System.out.println(var.getName() + " " + var.getType() + " " + var.getData() + " " + var.getisFinal());
         }
 
     }
