@@ -8,22 +8,22 @@ public class Main {
 
 
     public static void main(String[] args) throws src.MyExceptions {
-        String mydata = "void  google( int a){";
-        Pattern pattern = Pattern.compile("\\((.*?)\\)\\s*\\{\\s*");
+        String mydata = "2131231 && dsadasdc || ewws";
+        Pattern pattern = Pattern.compile("(^\\s*(\\|\\||&&))|(\\|\\||&&)\\s*(\\|\\||&&)|(\\|\\||&&)\\s*$");
         Matcher matcher = pattern.matcher(mydata);
-        if (matcher.find())
-        {
-            System.out.println(matcher.group(1));
-        }
+
+        System.out.println(matcher.find());
 
         Parser parser = new Parser("Files/Moodle Example/playg");
         List<String> javadoc = parser.getJavaDoc();
-        Scope curScope = new Scope(null,new ArrayList<>());
+        Scope curScope = new Scope(null,new ArrayList<>(), "Global");
 
         for (String commandLine : javadoc) {
             String lineType = parser.lineDefining(commandLine);
             TypeFactory line = TypeFactory.valueOf(lineType);
-            curScope = line.interpret(commandLine, curScope);
+            if(curScope.getFather() == null) {
+                curScope = line.interpret(commandLine, curScope);
+            }
 
         }
 

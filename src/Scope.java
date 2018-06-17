@@ -7,13 +7,15 @@ public class  Scope {
     private Scope father;
     private ArrayList<Variables> varArray;
     private ArrayList<Scope> innerScopeArr;
+    private String name;
 
-    public Scope(Scope father, List<String> text){
+    public Scope(Scope father, List<String> text, String name){
         this.textArray = text;
         varArray = new ArrayList<>();
         this.father = father;
         innerScopeArr = new ArrayList<>();
         textArray = text;
+        this.name = name;
     }
 
     public List<String> getTextArray() {

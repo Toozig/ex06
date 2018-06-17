@@ -1,3 +1,4 @@
+import com.sun.org.apache.xpath.internal.operations.Variable;
 import src.MyExceptions;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,27 +36,32 @@ public class Parser {
     public static final String STRING = "String";
     public static final String INCOMPATIBLE_TYPE = "incompatibleType";
     public static final String EmptyLine = " *";
-    public static final String EMPTY_LINE = "Empty line";
+    public static final String EMPTY_LINE = "Empty_line";
     private static final String END_STATEMENT = ";";
     private static final String SCOPE_OPENING = "{";
     public static final String INSIDE_PARRENTESS = "\\((.*?)\\)\\s*\\{" + "\\s*";
     public static final String GET_INSIDE_PERENTLESS_INFO = "\\((.*?)\\)\\s*\\{\\s*";
-    private String VariableDecleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
+    public static final String METHOD_NAME = "\\s*void\\s*(.*?)\\s*\\(\\s*";
+    public static final String LOGICAL_OPERATORS = "(\\|\\||&&)";
+    public static final String CONDITION_PATTEREN = "(^\\s*" + LOGICAL_OPERATORS + ")|" +
+            LOGICAL_OPERATORS +"\\s*"+ LOGICAL_OPERATORS +"|"+ LOGICAL_OPERATORS +"\\s*$";
+    public static final String INT_OR_DOUBLE = "(-?\\d)+(\\.\\d+)?";
+    private String VariableDeceleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
     private String Names = "\\s*((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+)";
     private List<String> javaDoc;
-    final private String MethodDecleration = "\\s*void\\s+(" + Names + ")\\s*\\((" + VariableDecleration +
+    final private String MethodDeceleration = "\\s*void\\s+(" + Names + ")\\s*\\((" + VariableDeceleration +
             "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+\\s*)\\s*))?(\\s*\\)\\s*\\{)?\\s*";
     final private String MethodCall = "\\s*(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\" +
             "(((\\s*((([a-z]|[A-Z])+)\\w*)\\s*|(_+([a-z]|[A-Z]|\\d)+))(\\)\\s*;)?|(\\s*\\)\\s*;))";
     final private String VariableAssignment = "\\s*(" + Names + ")\\s*=\\s*(((" + Names + "))" +
             "|(-?\\d+(.\\d+)?|(\\\"[\\w\\W]+\\\")||\\\'[\\w\\W]+\\\'))\\s*\\;?";
     final private String IfWhile = "\\s*(if|while)\\s*((\\(.+\\)\\s*\\{\\s*)|\\(\\s*\\s*" +
-            "(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\((-?\\d)+(\\.\\d+)?)";
+            "(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\(" + INT_OR_DOUBLE + ")";
     final private String returnVar = "\\s*return\\s*;\\s*";
     final private String ScopeClosing = "\\s*}\\s*";
     final private String Note = "^\\/\\/.*";
-    final private String VaribelCreation = VariableDecleration + "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))" +
-            "\\s*(=\\s*(-?\\d+(.\\d+)?|\\\"[\\w\\W]+\\\"|\\\'[\\w\\W]+\\\'|" + Names + "))?\\s*;?";
+    final private String VariableCreation = VariableDeceleration + "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))" +
+            "\\s*(=\\s*("+ INT_OR_DOUBLE +"|\\\"[\\w\\W]+\\\"|\\\'[\\w\\W]+\\\'|" + Names + "))?\\s*;?";
 
 
         /**
@@ -102,15 +108,41 @@ public class Parser {
         }
 
 
-
-        protected Scope parseMethodDeceleration(String line, Scope scope){
-            Pattern pattern = Pattern.compile(GET_INSIDE_PERENTLESS_INFO);
-            Matcher matcher = pattern.matcher(line);
+    /**
+     * This method  turns a method deceleration into a scope repressing the method
+     * @param line the line in the java file which declare the method
+     * @param scope Scope of the current scope
+     * @return Scope of the created method
+     */
+        protected Scope parseMethodDeceleration(String line, Scope scope) throws MyExceptions {
+            String methodVars = extractString(line, GET_INSIDE_PERENTLESS_INFO);
+            Pattern pattern;
+            Matcher matcher;
+            pattern = Pattern.compile(METHOD_NAME);
+            matcher = pattern.matcher(line);
             matcher.find();
-            String methodVars = matcher.group(1);
-            Scope methodScope = new Scope(scope, null);
+            String methodName = matcher.group(1);
+            if(!isNameValid(methodName)){
+                throw new MyExceptions(); //todo exceptions
+            }
+            Scope methodScope = new Scope(scope, null, methodName);
             parseVar(methodVars, methodScope);
             return methodScope;
+        }
+     // Get a substring of a string by using regex
+    private String extractString(String line, String regex) {
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(line);
+        matcher.find();
+        return matcher.group(1);
+    }
+
+    // checks if name of method/ variable is valid
+        private boolean isNameValid(String name){
+            name.replace(Parser.WHITE_SPACE,"");
+            Pattern pattern = Pattern.compile(Names);
+            Matcher matcher = pattern.matcher(name);
+            return matcher.matches();
         }
 
 
@@ -229,12 +261,12 @@ public class Parser {
         protected String lineDefining (String fullLine) throws MyExceptions {
 
             String lineDeceleration = fullLine.split(COMMA)[0];
-            Pattern pattern = Pattern.compile(VaribelCreation);
+            Pattern pattern = Pattern.compile(VariableCreation);
             Matcher matcher = pattern.matcher(lineDeceleration);
             if (matcher.matches()) {
                 return VARIABLE;
             }
-            pattern = Pattern.compile(MethodDecleration);
+            pattern = Pattern.compile(MethodDeceleration);
             matcher = pattern.matcher(lineDeceleration);
             if (matcher.matches()) {
                 lineEnd(fullLine, SCOPE_OPENING);
@@ -294,114 +326,51 @@ public class Parser {
          * @throws MyExceptions if the line ending is ilegal
          */
         private void lineEnd (String line, String endChar) throws MyExceptions {
-            line.replaceAll("\\s+", "");
+            line.replaceAll(WHITE_SPACE, "");
             if (!line.endsWith(endChar)) {
                 throw new MyExceptions();
             }
         }
 
-        //    public List<String> checker() {
-//        ArrayList<String> re = new ArrayList<>();
-//        for (String line : javaDoc) {
-//            String[] splitString = line.split(COMMA);
-//            String lineDefiner = lineDefining(splitString[0]);
-//            re.add(lineDefiner);
-//        }
-//             return re;
-//    }
-//    protected Scope globalScopeCreator() throws MyExceptions {
-//        Scope globalScope = new Scope(null, javaDoc);
-//        curScope = globalScope;
-//        for (int i = 0; i < javaDoc.size(); i++) {
-//            String line = javaDoc.get(i);
-//            String[] splitString = line.split(COMMA);
-//            String lineDefiner = lineDefining(splitString[0]);
-//            switch (lineDefiner) {
-//                case VARIABLE:
-//                    parseVar(splitString);
-//                    lineEnd(line, END_STATEMENT);
-//                    break;
-//                case METHOD_DECLARE:
-//                    Scope innerScope = parseMethod(splitString, i);
-//                    curScope.addInnerScope(innerScope);
-//                    i = i + innerScope.getTextArray().size() - 1;
-//                    lineEnd(line, SCOPE_OPENING);
-//                    break;
-//                case VARIABLE_ASSIGNMENT:
-//                    assignVariable(splitString);
-//                    lineEnd(line, END_STATEMENT);
-//                    break;
-//                case NOTE:
-//                case EMPTY_LINE:
-//                    break;
-//                default:
-//                    // todo exception handling
-//            }
-//
-//        }
-//        return globalScope;
+        protected Scope ParesIfWhile(String line, Scope scope) throws MyExceptions {
+            String conditions = extractString(line, GET_INSIDE_PERENTLESS_INFO);
+            Pattern pattern = Pattern.compile(CONDITION_PATTEREN);
+            Matcher matcher = pattern.matcher(conditions);
+            if(matcher.find()){
+                throw new MyExceptions(); // todo expectations
+            }
+            String [] conditionsArr = conditions.split(LOGICAL_OPERATORS);
+            for (String condition: conditionsArr) {
+                if (isConditionValid(scope, condition)) break;
+            }
+            return new Scope(scope, null, IF_WHILE_BLOCK);
+        }
 
-//    }
-        // todo assigning value to a value;
-//    private void assignVariable(String[] assignLine) {
-//
-
-//    }
-//    private Scope createInnerScope(List<String> scopeText, int index) {
-//        int catalan = CATALAN;
-//        ArrayList<String> innerScope = new ArrayList<>();
-//        innerScope.add(scopeText.get(index));
-//        while (catalan != OUTER_SCOPE) {
-//            index++;
-//            String[] line = scopeText.get(index).split(COMMA);
-//            String lineDefiner = lineDefining(line[FIRST_LINE]);
-//            if (lineDefiner.equals(METHOD_DECLARE) || lineDefiner.equals(IF_WHILE_BLOCK)) {
-//                catalan++;
-//            }
-//            innerScope.add(scopeText.get(index));
-//            if (lineDefiner.equals(SCOPE_CLOSING)) {
-//                catalan--;
-//            }
-//        }
-//        return new Scope(curScope, innerScope);
-
-//    }
-
-        // todo method that takes a line of if\while deceleration and checks it
-//    private Scope parseCondition(String[] varLine, int index) {
-//        // line phrasing
-//        // should we add to a method "title" field?
-//        Scope innerScope = createInnerScope(curScope.getTextArray(), index);
-//        return innerScope;
-//
-
-//    }
-        // todo method that takes a line of method deceleration and turns it into method
-//    private Scope parseMethod(String[] varLine, int index) {
-//
-//        // line phrasing
-//        // should we add to a method "title" field?
-//        Scope innerScope = createInnerScope(curScope.getTextArray(), index);
-
-//        return innerScope;
-//    }
-//
-//    // todo method that takes a line of var deceleration and turns it into varibales
-//    private void parseVar(String[] varLine) {
-
-//    }
-
-
-//    private String notePatteredCreator() {
-//        int outerScope = OUTER_SCOPE;
-//        Scope father = curScope.getFather();
-//        while (father != null) {
-//            outerScope++;
-//            father = father.getFather();
-//        }
-//        String indentation = INDENTATION;
-//        indentation = new String(new char[outerScope]).replace("\0", indentation);
-//        return NO_CHAR_BEFORE + indentation + Note;
-//    }
+        // checks if a condition in if\while block is a valid condition.
+    private boolean isConditionValid(Scope scope, String condition) throws MyExceptions {
+        condition = condition.trim();
+        if(!(isConditionTextValid(condition))){
+            Variables var = scope.getVariable(condition);
+            if(var == null){
+                throw new MyExceptions(); //todo exception no such variable
+            }
+            if(isConditionTextValid(var.getData().toString())){
+                return true;
+            }
+            throw  new MyExceptions(); //todo variable is not a double/int/ initialized
+        }
+        return false;
     }
+    // checks if a string of condition is a valid argument.
+    private boolean isConditionTextValid(String string){
+        Pattern pattern;
+        Matcher matcher;
+        pattern = Pattern.compile(INT_OR_DOUBLE);
+        matcher = pattern.matcher(string);
+        return matcher.matches() || string.equals("false")||string.equals("true");
+
+    }
+
+
+}
 

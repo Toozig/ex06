@@ -7,10 +7,11 @@ public enum TypeFactory {
 
     },
     MethodDeclare{
-        protected Scope interpret(String line, Scope scope){
-            parser.parseMethodDeceleration(line, scope);
-            return scope.getFather();
-        }
+        protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
+            Scope innerScope = parser.parseMethodDeceleration(line, scope);
+            scope.addInnerScope(innerScope);
+            return innerScope;
+            }
 
     },
     Variable_Assignment{
@@ -20,9 +21,12 @@ public enum TypeFactory {
         }
 
     },
-    If_While_Block{
-        protected Scope interpret(String line, Scope scope){
-            return scope.getFather();
+    IfWhileBlock{
+        protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
+            Scope innerScope = parser.ParesIfWhile(line, scope);
+            scope.addInnerScope(innerScope);
+            return innerScope;
+
         }
 
     },
@@ -52,6 +56,11 @@ public enum TypeFactory {
         }
     },
     Note{
+        protected Scope interpret(String line, Scope scope) {
+            return scope;
+        }
+    },
+    Empty_line{
         protected Scope interpret(String line, Scope scope) {
             return scope;
         }
