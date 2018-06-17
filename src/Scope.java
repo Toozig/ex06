@@ -11,7 +11,7 @@ public class  Scope {
     private ArrayList<Scope> innerScopeArr;
 
     public Scope(Scope father, List<String> text){
-        this.textArray = new ArrayList<>();
+        this.textArray = text;
         varArray = new ArrayList<>();
         this.father = father;
         innerScopeArr = new ArrayList<>();
