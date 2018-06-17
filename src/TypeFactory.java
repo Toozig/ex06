@@ -3,7 +3,8 @@ import src.MyExceptions;
 public enum TypeFactory {
     Variable{
         protected Scope interpret(String line, Scope scope){
-            return scope.getFather();
+            parser.parseVar(line,scope);
+            return scope;
         }
 
     },
@@ -15,7 +16,8 @@ public enum TypeFactory {
     },
     Variable_Assignment{
         protected Scope interpret(String line, Scope scope){
-            return scope.getFather();
+            parser.assignVar(line,scope);
+            return scope;
         }
 
     },
@@ -56,4 +58,6 @@ public enum TypeFactory {
         }
     };
     abstract protected Scope interpret(String line, Scope scope) throws src.MyExceptions;
+    Parser parser = new Parser();
+
 }
