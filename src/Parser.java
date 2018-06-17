@@ -38,6 +38,8 @@ public class Parser {
     public static final String EMPTY_LINE = "Empty line";
     private static final String END_STATEMENT = ";";
     private static final String SCOPE_OPENING = "{";
+    public static final String INSIDE_PARRENTESS = "\\((.*?)\\)\\s*\\{" + "\\s*";
+    public static final String GET_INSIDE_PERENTLESS_INFO = "\\((.*?)\\)\\s*\\{\\s*";
     private String VariableDecleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
     private String Names = "\\s*((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+)";
     private List<String> javaDoc;
@@ -100,12 +102,24 @@ public class Parser {
         }
 
 
+
+        protected Scope parseMethodDeceleration(String line, Scope scope){
+            Pattern pattern = Pattern.compile(GET_INSIDE_PERENTLESS_INFO);
+            Matcher matcher = pattern.matcher(line);
+            matcher.find();
+            String methodVars = matcher.group(1);
+            Scope methodScope = new Scope(scope, null);
+            parseVar(methodVars, methodScope);
+            return methodScope;
+        }
+
+
         // todo method that takes a line of var deceleration and turns it into varibales
         protected void parseVar (String line,Scope scope){
             String[] varLine = line.split(COMMA);
             varLine[varLine.length-1] = varLine[varLine.length-1].replace(END_STATEMENT,"");
             String[] variableString = varLine[FIRST_VAR_DECLARE].split(WHITE_SPACE);
-            Variables var;
+            Variables<Object> var;
             ArrayList<Variables> variables;
             Object data = null;
             String name = "";
@@ -136,7 +150,7 @@ public class Parser {
                     }
                     break;
             }
-            var = new Variables(name, type, data, isFinal);
+            var = new Variables<>(name, type, data, isFinal);
             scope.addVariable(var);
             for (int i = 1; i < varLine.length; i++) {
                 variableString = varLine[i].split(WHITE_SPACE);

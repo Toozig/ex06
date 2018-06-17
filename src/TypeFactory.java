@@ -1,5 +1,3 @@
-import src.MyExceptions;
-
 public enum TypeFactory {
     Variable{
         protected Scope interpret(String line, Scope scope){
@@ -8,8 +6,9 @@ public enum TypeFactory {
         }
 
     },
-    Method_Declare{
+    MethodDeclare{
         protected Scope interpret(String line, Scope scope){
+            parser.parseMethodDeceleration(line, scope);
             return scope.getFather();
         }
 

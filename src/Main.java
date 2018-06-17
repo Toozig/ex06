@@ -1,11 +1,20 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main {
 
 
 
     public static void main(String[] args) throws src.MyExceptions {
+        String mydata = "void  google( int a){";
+        Pattern pattern = Pattern.compile("\\((.*?)\\)\\s*\\{\\s*");
+        Matcher matcher = pattern.matcher(mydata);
+        if (matcher.find())
+        {
+            System.out.println(matcher.group(1));
+        }
 
         Parser parser = new Parser("Files/Moodle Example/playg");
         List<String> javadoc = parser.getJavaDoc();
