@@ -42,7 +42,7 @@ public class Parser {
     public static final String STRING = "String";
     public static final String INCOMPATIBLE_TYPE = "incompatibleType";
     public static final String EmptyLine = " *";
-    public static final String EMPTY_LINE = "Empty_line";
+    public static final String EMPTY_LINE = "Emptyline";
     private static final String END_STATEMENT = ";";
     private static final String SCOPE_OPENING = "{";
     public static final String INSIDE_PARRENTESS = "\\((.*?)\\)\\s*\\{" + "\\s*";
@@ -108,7 +108,7 @@ public class Parser {
 
 
 
-    protected void assignVar(String line, Scope scope) {
+    protected void assignVar(String line, ScopeC scope) {
         String[] varLine = line.split(COMMA);
         varLine[varLine.length - 1] = varLine[varLine.length - 1].replace(END_STATEMENT, EMPTYSTRING);
         for (String var : varLine) {
@@ -121,7 +121,8 @@ public class Parser {
                     Object obj = dataAccordingToType(varValue, variable.getType());
                     variable.setData(obj);
                 } catch (NumberFormatException e) {
-                    getExistingVar(scope, varValue, variable);
+                    Variables existVar = getExistingVar(scope,varValue,variable.getType());
+                    variable.setData(existVar.getData());
 
                 }
             }
@@ -130,10 +131,10 @@ public class Parser {
         }
     }
 
-    private void getExistingVar(Scope scope, String varValue, Variables variable) {
+    private Variables getExistingVar(ScopeC scope, String varValue, String type) {
         Variables existVar = scope.getVariable(varValue);
-        if (existVar != null && existVar.getType().equals(variable.getType())) {
-            variable.setData(existVar.getData());
+        if (existVar != null && existVar.getType().equals(type)) {
+            return existVar;
         } else {
             throw new NumberFormatException();
         }
@@ -141,14 +142,14 @@ public class Parser {
 
 
     // todo method that takes a line of var deceleration and turns it into varibales
-    protected ArrayList<Variables> parseVar(String line, Scope scope) {
+    protected ArrayList<Variables> parseVar(String line, ScopeC scope) throws MyExceptions {
         ArrayList<Variables> vars = new ArrayList<>();
         String[] varLine = line.split(COMMA);
         varLine[varLine.length - 1] = varLine[varLine.length - 1].replace(END_STATEMENT, EMPTYSTRING);
         boolean isFinal = isFinal(varLine[FIRST_VAR_DECLARE]);
-        varLine[FIRST_VAR_DECLARE] = varLine[FIRST_VAR_DECLARE].replace(FINAL, EMPTYSTRING);
+        varLine[FIRST_VAR_DECLARE] = varLine[FIRST_VAR_DECLARE].replace(FINAL, EMPTYSTRING).trim();
         String type = extractType(varLine[FIRST_VAR_DECLARE]);
-        varLine[FIRST_VAR_DECLARE] = varLine[FIRST_VAR_DECLARE].replace(type, EMPTYSTRING);
+        varLine[FIRST_VAR_DECLARE] = varLine[FIRST_VAR_DECLARE].replace(type, EMPTYSTRING).trim();
         String[] variableString = varLine[FIRST_VAR_DECLARE].split(EQUALS);
         String[] finalLst = trimStringLst(variableString);
         Object data = null;
@@ -171,7 +172,7 @@ public class Parser {
      * -     * @return Scope of the created method
      * -
      */
-    protected Scope parseMethodDeceleration(String line, Scope scope) throws MyExceptions {
+    protected Method parseMethodDeceleration(String line, ScopeC scope) throws MyExceptions {
         String methodVars = extractString(line, GET_INSIDE_PERENTLESS_INFO);
         Pattern pattern;
         Matcher matcher;
@@ -182,10 +183,11 @@ public class Parser {
         if (!isNameValid(methodName)) {
             throw new MyExceptions(); //todo exceptions
         }
-        Method methodScope = new Method(scope,methodName ,new ArrayList<Variables>)
-        ArrayList<Variables> arguments = parseVar(methodVars, scope);
-        methodScope.setArguments(arguments);
-        return methodScope;
+        ArrayList<Variables> arguments = new ArrayList<>();
+        if(!methodVars.equals(EMPTYSTRING)) { //todo  vars stuff in genetic
+            arguments = parseVar(methodVars, new ScopeC(null));
+        }
+        return new Method(scope,arguments, methodName);
     }
 
     protected ScopeC parseMethodCall(ScopeC scope, String line) throws MyExceptions {
@@ -206,6 +208,10 @@ public class Parser {
             try {
                 dataAccordingToType(input, argType);
             } catch (NumberFormatException e) {
+                Variables var = getExistingVar(scope, input, argType);
+                if(!var.getType().equals(argType)){
+                    throw new MyExceptions(); // todo arg type does not much
+                }
             }
         }
         return scope;
@@ -228,7 +234,7 @@ public class Parser {
     }
 
 
-    private Variables createVar(String[] line, Object data, String type, Boolean isFinal, Scope scope) throws NumberFormatException {
+    private Variables createVar(String[] line, Object data, String type, Boolean isFinal, ScopeC scope) throws NumberFormatException, MyExceptions {
         String name = line[0];
         switch (line.length) {
             case 2:
@@ -254,6 +260,15 @@ public class Parser {
         }
         Variables var = new Variables(name, type, data, isFinal);
         return var;
+    }
+
+    private boolean isThereAnotherVarIdentical (String name,ScopeC scope) {
+        for (Variables var : scope.getVarArray()) {
+            if (var.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String[] trimStringLst(String[] lst) {
@@ -288,7 +303,7 @@ public class Parser {
                 return Boolean.parseBoolean(data);
             case CHAR:
             case STRING:
-                if (data.startsWith("\"") && data.endsWith("\"")) {
+                if (data.startsWith("\"") && data.endsWith("\"")||data.startsWith("\'") && data.endsWith("\'")) {
                     if(type.equals(CHAR)&&data.length()>3){
                         throw new NumberFormatException();
                     }
@@ -301,7 +316,7 @@ public class Parser {
         throw new NumberFormatException();
     }
 
-    private String CheckIfExistVar(String varData, String type, Scope scope) {
+    private String CheckIfExistVar(String varData, String type, ScopeC scope) {
         Variables existVar = scope.getVariable(varData);
         if (existVar != null) {
             if (existVar.getType().equals(type)) {
@@ -381,7 +396,7 @@ public class Parser {
         }
     }
 
-    protected Scope ParesIfWhile(String line, Scope scope) throws MyExceptions {
+    protected ScopeC ParesIfWhile(String line, ScopeC scope) throws MyExceptions {
         String conditions = extractString(line, GET_INSIDE_PERENTLESS_INFO);
         Pattern pattern = Pattern.compile(CONDITION_PATTEREN);
         Matcher matcher = pattern.matcher(conditions);
@@ -392,11 +407,11 @@ public class Parser {
         for (String condition : conditionsArr) {
             if (isConditionValid(scope, condition)) break;
         }
-        return new Scope(scope, null, IF_WHILE_BLOCK);
+        return new ScopeC(scope);
     }
 
     // checks if a condition in if\while block is a valid condition.
-    private boolean isConditionValid(Scope scope, String condition) throws MyExceptions {
+    private boolean isConditionValid(ScopeC scope, String condition) throws MyExceptions {
         condition = condition.trim();
         if (!(isConditionTextValid(condition))) {
             Variables var = scope.getVariable(condition); // condition might be variable

@@ -2,77 +2,86 @@ import java.util.ArrayList;
 
 public enum TypeFactory {
     Variable{
-        protected Scope interpret(String line, Scope scope){
-            parser.parseVar(line,scope);
-            return scope;
+        protected ScopeC interpret() throws src.MyExceptions {
+            parser.parseVar(command,scopeC);
+            return scopeC;
         }
-
-
     },
     MethodDeclare{
-        protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
-//            Method innerScope = parser.parseMethodDeceleration(line, scope);
-//            scope.addInnerScope(innerScope);
-            return scope;
+
+        protected ScopeC interpret() throws src.MyExceptions {
+            Method innerScope = parser.parseMethodDeceleration(command, scopeC);
+            scopeC.addInnerScope(innerScope);
+            return innerScope;
             }
 
     },
     VariableAssignment{
-        protected Scope interpret(String line, Scope scope){
-            parser.assignVar(line,scope);
-            return scope;
+        protected ScopeC interpret() throws src.MyExceptions {
+            parser.assignVar(command,scopeC);
+            return scopeC;
         }
 
     },
     IfWhileBlock{
-        protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
-            Scope innerScope = parser.ParesIfWhile(line, scope);
-            scope.addInnerScope(innerScope);
+
+        protected ScopeC interpret() throws src.MyExceptions {
+            ScopeC innerScope = parser.ParesIfWhile(command, scopeC);
+            scopeC.addInnerScope(innerScope);
             return innerScope;
 
         }
 
     },
-    Method_Call{
-        protected Scope interpret(String line, Scope scope){
-            return scope.getFather();
+    MethodCall{
+        protected ScopeC interpret() throws src.MyExceptions {
+            return parser.parseMethodCall(scopeC, command);
         }
 
     },
-    line_Error{
-        protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
+    lineError{
+        protected ScopeC interpret() throws src.MyExceptions {
             throw new src.MyExceptions();
         }
 
 
     },
-    Scope_Closing{
-        protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
-            Scope father = scope.getFather();
+    ScopeClosing{
+        protected ScopeC interpret() throws src.MyExceptions {
+            ScopeC father = scopeC.getFather();
             if(father == null){
                 throw new src.MyExceptions(); // todo exception handling
             }
-            return scope.getFather();
+            return scopeC.getFather();
         }
     },
-
     Return {
-        @Override
-        protected Scope interpret(String line, Scope scope) {
-            return scope;
+
+        protected ScopeC interpret() throws src.MyExceptions {
+            return scopeC;
         }
     },
     Note{
-        protected Scope interpret(String line, Scope scope) {
-            return scope;
+
+        protected ScopeC interpret() throws src.MyExceptions {
+            return scopeC;
         }
     },
-    Empty_line{
-        protected Scope interpret(String line, Scope scope) {
-            return scope;
+    Emptyline{
+        protected ScopeC interpret() throws src.MyExceptions {
+
+            return scopeC;
         }
+
     };
-    abstract protected Scope interpret(String line, Scope scope) throws src.MyExceptions;
-    Parser parser = new Parser();
+    abstract protected ScopeC interpret() throws src.MyExceptions;
+    protected Parser parser = new Parser();
+    protected String command;
+    protected ScopeC  scopeC;
+
+    protected void setLine(String line, ScopeC scopeC){
+        command =line;
+        this.scopeC = scopeC;
+    }
 
 }

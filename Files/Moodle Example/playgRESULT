@@ -1,4 +1,3 @@
- ---> Empty_line
 final char c = 'b'; ---> Variable
  ---> Empty_line
 // comment ---> Note
@@ -21,4 +20,3 @@ void boo(int a, int b, int c1, String d) { ---> MethodDeclare
 void doo(int a1, int a2) { ---> MethodDeclare
 	return; ---> Return
 } ---> ScopeClosing
- ---> Empty_line
