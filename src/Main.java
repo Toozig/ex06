@@ -15,8 +15,14 @@ public class Main {
             String lineType = parser.lineDefining(commandLine);
             TypeFactory line = TypeFactory.valueOf(lineType);
             curScope = line.interpret(commandLine, curScope);
+            for(Variables var :curScope.getVarArray()){
+                System.out.println(var.getName()+" "+var.getData());
+            }
+        }
+//        String b = " b =   a";
+//        String[] split = b.split("[=\\s+]*(.*?)[=\\s+]*");
 
         }
 
     }
-}
+
