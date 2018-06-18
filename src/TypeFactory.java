@@ -14,7 +14,7 @@ public enum TypeFactory {
             }
 
     },
-    Variable_Assignment{
+    VariableAssignment{
         protected Scope interpret(String line, Scope scope){
             parser.assignVar(line,scope);
             return scope;

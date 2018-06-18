@@ -1,4 +1,5 @@
 import src.MyExceptions;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,6 +12,7 @@ import java.util.regex.Pattern;
 import static java.nio.file.Paths.get;
 
 public class Parser {
+
     public static final String FALSE = "false";
     public static final String TRUE = "true";
     private static HashMap<String, String> pattenToDefDict;
@@ -53,6 +55,43 @@ public class Parser {
     private String Names = "\\s*((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+)";
     private List<String> javaDoc;
     final private String MethodDeceleration = "\\s*void\\s+(" + Names + ")\\s*\\((" + VariableDeceleration +
+
+    //Magic numbers
+    final private static String VARIABLE = "Variable";
+    final private static String METHOD_DECLARE = "MethodDeclare";
+    final private static String VARIABLE_ASSIGNMENT = "VariableAssignment";
+    final private static String NOTE = "Note";
+    final private static String COMMA = ",";
+    final private static String IF_WHILE_BLOCK = "IfWhileBlock";
+    final private static String SCOPE_CLOSING = "ScopeClosing";
+    final private static String METHOD_CALL = "MethodCall";
+    final private static String RETURN = "Return";
+    final private static String LINE_ERROR = "lineError";
+    final private static String INDENTATION = "    ";
+    final private static String NO_CHAR_BEFORE = "^";
+    final private static int OUTER_SCOPE = 0;
+    final private static int FIRST_LINE = 0;
+    final private static int CATALAN = 1;
+    final private static String WHITE_SPACE = "\\s+";
+    final private static String FINAL = "final";
+    final private static int FIRST_VAR_DECLARE = 0;
+    final private static String INT = "int";
+    final private static String DOUBLE = "double";
+    final private static String BOOLEAN = "boolean";
+    final private static String CHAR = "char";
+    final private static String STRING = "String";
+    final private static String INCOMPATIBLE_TYPE = "incompatibleType";
+    final private static String EmptyLine = " *";
+    final private static String EMPTY_LINE = "Empty line";
+    final private static String END_STATEMENT = ";";
+    final private static String SCOPE_OPENING = "{";
+    final private static String EQUALS = "=";
+    final private static String EMPTYSTRING = "";
+    final private String VariableDecleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
+    final private String Names = "\\s*((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+)";
+    final private List<String> javaDoc;
+    final private String MethodDecleration = "\\s*void\\s+(" + Names + ")\\s*\\((" + VariableDecleration +
+
             "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+\\s*)\\s*))?(\\s*\\)\\s*\\{)?\\s*";
     final private String MethodCall = "\\s*(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\" +
             "(((\\s*((([a-z]|[A-Z])+)\\w*)\\s*|(_+([a-z]|[A-Z]|\\d)+))(\\)\\s*;)?|(\\s*\\)\\s*;))";
@@ -65,6 +104,7 @@ public class Parser {
     final private String Note = "^\\/\\/.*";
     final private String VariableCreation = VariableDeceleration + "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))" +
             "\\s*(=\\s*("+ INT_OR_DOUBLE_REGEX +"|\\\"[\\w\\W]+\\\"|\\\'[\\w\\W]+\\\'|" + Names + "))?\\s*;?";
+
 
 
         /**
@@ -80,6 +120,7 @@ public class Parser {
         javaDoc = null;
         dictCreator();
     }
+
 
 
         //creates dictionary of pattens and their meaning
@@ -98,32 +139,56 @@ public class Parser {
     }
 
 
-
-
-        protected void assignVar (String line , Scope scope){
-            String[] varLine = line.split(COMMA);
-            for (String var : varLine) {
-                String[] varAssign = var.split(WHITE_SPACE);
-                String varName = varAssign[0];
-                String varValue = varAssign[2];
-                Variables variable = scope.getVariable(varName);
-                if (variable != null && (!(variable.getIsFinal()))) {
-                    try {
-                        Object obj = dataAccordingToType(varValue, variable.getType());
-                        variable.setData(obj);
-                    } catch (NumberFormatException e) {
-                        Variables existVar = scope.getVariable(varValue);
-                        if (existVar != null && existVar.getType().equals(variable.getType())) {
-                            variable.setData(existVar.getData());
-                        } else {
-                            throw new NumberFormatException();
-                        }
-
+    protected void assignVar(String line, Scope scope) {
+        String[] varLine = line.split(COMMA);
+        varLine[varLine.length - 1] = varLine[varLine.length - 1].replace(END_STATEMENT, EMPTYSTRING);
+        for (String var : varLine) {
+            String[] varAssign = trimStringLst(var.split(EQUALS));
+            String varName = varAssign[0];
+            String varValue = varAssign[1];
+            Variables variable = scope.getVariable(varName);
+            if (variable != null && (!(variable.getisFinal()))) {
+                try {
+                    Object obj = dataAccordingToType(varValue, variable.getType());
+                    variable.setData(obj);
+                } catch (NumberFormatException e) {
+                    Variables existVar = scope.getVariable(varValue);
+                    if (existVar != null && existVar.getType().equals(variable.getType())) {
+                        variable.setData(existVar.getData());
+                    } else {
+                        throw new NumberFormatException();
                     }
 
                 }
+
             }
         }
+    }
+
+
+
+    // todo method that takes a line of var deceleration and turns it into varibales
+    protected void parseVar(String line, Scope scope) {
+        String[] varLine = line.split(COMMA);
+        varLine[varLine.length - 1] = varLine[varLine.length - 1].replace(END_STATEMENT, EMPTYSTRING);
+        boolean isFinal = isFinal(varLine[FIRST_VAR_DECLARE]);
+        varLine[FIRST_VAR_DECLARE] = varLine[FIRST_VAR_DECLARE].replace(FINAL, EMPTYSTRING);
+        String type = extractType(varLine[FIRST_VAR_DECLARE]);
+        varLine[FIRST_VAR_DECLARE] = varLine[FIRST_VAR_DECLARE].replace(type, EMPTYSTRING);
+        String[] variableString = varLine[FIRST_VAR_DECLARE].split(EQUALS);
+        String[] finalLst = trimStringLst(variableString);
+        Variables var;
+        ArrayList<Variables> variables;
+        Object data = null;
+        createVar(finalLst, data, type, isFinal, scope);
+        for (int i = 1; i < varLine.length; i++) {
+            finalLst = trimStringLst(varLine[i].split(EQUALS));
+            data = null;
+            createVar(finalLst, data, type, isFinal, scope);
+
+
+        }
+
 
      // Get a substring of a string by using regex
     private String extractString(String line, String regex) {
@@ -142,109 +207,74 @@ public class Parser {
         }
 
 
-        // todo method that takes a line of var deceleration and turns it into varibales
-        protected void parseVar (String line,Scope scope){
-            String[] varLine = line.split(COMMA);
-            varLine[varLine.length-1] = varLine[varLine.length-1].replace(END_STATEMENT,"");
-            String[] variableString = varLine[FIRST_VAR_DECLARE].split(WHITE_SPACE);
-            Variables<Object> var;
-            ArrayList<Variables> variables;
-            Object data = null;
-            String name = "";
-            String type = "";
-            boolean isFinal = false;
-            switch (variableString.length) {
-                case 2:
-                    type = variableString[0];
-                    name = variableString[1];
-                    break;
-                case 4:
-                    type = variableString[0];
-                    name = variableString[1];
-                    try {
-                        data = dataAccordingToType(variableString[3], type);
-                    } catch (NumberFormatException e) {
-                        data = CheckIfExistVar(variableString[3], type,scope);
-                    }
-                    break;
-                case 5:
-                    isFinal = variableString[0].equals(FINAL);
-                    type = variableString[1];
-                    name = variableString[2];
-                    try {
-                        data = dataAccordingToType(variableString[4], type);
-                    } catch (NumberFormatException e) {
-                        data = CheckIfExistVar(variableString[4], type,scope);
-                    }
-                    break;
-            }
-            var = new Variables<>(name, type, data, isFinal);
-            scope.addVariable(var);
-            for (int i = 1; i < varLine.length; i++) {
-                variableString = varLine[i].split(WHITE_SPACE);
-                data = null;
-                name = variableString[0];
-                switch (variableString.length) {
-                    case 3:
-                        try {
-                            data = dataAccordingToType(variableString[2], type);
-                        } catch (NumberFormatException e) {
-                            data = CheckIfExistVar(variableString[2], type,scope);
-                        }
+    }
+
+    private void createVar(String[] line, Object data, String type, Boolean isFinal, Scope scope) {
+        String name = line[0];
+        switch (line.length) {
+            case 2:
+                try {
+                    data = dataAccordingToType(line[1], type);
+                } catch (NumberFormatException e) {
+                    data = CheckIfExistVar(line[1], type, scope);
                 }
-                var = new Variables(name, type, data, isFinal);
-                scope.addVariable(var);
-            }
-
+                break;
         }
+        Variables var = new Variables(name, type, data, isFinal);
+        scope.addVariable(var);
+    }
 
-        private Object dataAccordingToType (String data, String type){
-            switch (type) {
-                case INT:
-                    return Integer.parseInt(data);
-                case DOUBLE:
-                    return Double.parseDouble(data);
-                case BOOLEAN:
-                    return Boolean.parseBoolean(data);
-                case CHAR:
-                case STRING:
-                    if (data.startsWith("\"") && data.endsWith("\"")) {
-                        return data.replace("\"", "");
-                    } else {
-                        throw new NumberFormatException();
-                    }
-            }
-            throw new NumberFormatException();
+    private String[] trimStringLst(String[] lst) {
+        String[] finalLst = new String[lst.length];
+        for (int i = 0; i < lst.length; i++) {
+            finalLst[i] = lst[i].trim();
         }
+        return finalLst;
 
-        private String CheckIfExistVar (String varData, String type,Scope scope){ //todo I think this should be a function of the Scope Class
-            Variables existVar = scope.getVariable(varData);
-            if (existVar != null) {
-                if (existVar.getType().equals(type)) {
-                    return String.valueOf(existVar.getData());
+    }
+
+
+    private Boolean isFinal(String line) {
+        String[] lineVar = line.split(WHITE_SPACE);
+        return lineVar[0].equals(FINAL);
+
+    }
+
+    private String extractType(String line) {
+        String[] lineVar = line.split(WHITE_SPACE);
+        return lineVar[0];
+    }
+
+
+    private Object dataAccordingToType(String data, String type) {
+        switch (type) {
+            case INT:
+                return Integer.parseInt(data);
+            case DOUBLE:
+                return Double.parseDouble(data);
+            case BOOLEAN:
+                return Boolean.parseBoolean(data);
+            case CHAR:
+            case STRING:
+                if (data.startsWith("\"") && data.endsWith("\"")) {
+                    return data.replace("\"", EMPTYSTRING);
+                } else {
+                    throw new NumberFormatException();
+
                 }
-            }
-            return null;
         }
+        throw new NumberFormatException();
+    }
 
-
-        /**
-         * This method takes a text file and turns it into an array of String, each index contains line from the txt
-         *
-         * @return Array of Strings.
-         */
-        protected List<String> convertToStringArr (String path) throws MyExceptions {
-
-            try {
-                Path filePath = get(path);
-                return Files.readAllLines(filePath);
+    private String CheckIfExistVar(String varData, String type, Scope scope) {
+        Variables existVar = scope.getVariable(varData);
+        if (existVar != null) {
+            if (existVar.getType().equals(type)) {
+                return String.valueOf(existVar.getData());
             }
-            // TODO see HTF we handle the exception.
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
         }
+        return null;
+    }
 
         /**
          *  Define the line of the java doc
@@ -267,13 +297,32 @@ public class Parser {
                 }
             }
             return LINE_ERROR;
+
+    /**
+     * This method takes a text file and turns it into an array of String, each index contains line from the txt
+     *
+     * @return Array of Strings.
+     */
+    protected List<String> convertToStringArr(String path) throws MyExceptions {
+
+        try {
+            Path filePath = get(path);
+            return Files.readAllLines(filePath);
         }
+        // TODO see HTF we handle the exception.
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
 
 
     protected List<String> getJavaDoc () {
             return javaDoc;
-        }
+
+
 
         /**
          * Checks if the end of a line is legal
@@ -335,6 +384,27 @@ public class Parser {
         return matcher.matches() || string.equals(FALSE)||string.equals(TRUE);
 
     }
+    protected List<String> getJavaDoc() {
+        return javaDoc;
+    }
+
+    /**
+     * Checks if the end of a line is legal
+     *
+     * @param line    the checked line
+     * @param endChar the char supposed to be at the end
+     * @throws MyExceptions if the line ending is ilegal
+     */
+    private void lineEnd(String line, String endChar) throws MyExceptions {
+        line.replaceAll("\\s+", "");
+        if (!line.endsWith(endChar)) {
+            throw new MyExceptions();
+        }
+    }
+
+
+}
+
 
 
 }

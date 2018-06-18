@@ -1,3 +1,4 @@
+
 final char c = 'b';
 
 // comment
@@ -20,3 +21,4 @@ void boo(int a, int b, int c1, String d) {
 void doo(int a1, int a2) {
 	return;
 }
+
