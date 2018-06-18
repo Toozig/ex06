@@ -8,9 +8,9 @@ public enum TypeFactory {
     },
     MethodDeclare{
         protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
-            Scope innerScope = parser.parseMethodDeceleration(line, scope);
-            scope.addInnerScope(innerScope);
-            return innerScope;
+//            Method innerScope = parser.parseMethodDeceleration(line, scope);
+//            scope.addInnerScope(innerScope);
+            return scope;
             }
 
     },
@@ -44,7 +44,11 @@ public enum TypeFactory {
 
     },
     Scope_Closing{
-        protected Scope interpret(String line, Scope scope){
+        protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
+            Scope father = scope.getFather();
+            if(father == null){
+                throw new src.MyExceptions(); // todo exception handling
+            }
             return scope.getFather();
         }
     },

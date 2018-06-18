@@ -18,7 +18,7 @@ public class Variables<T> {
         return name;
     }
 
-    public boolean getisFinal() {
+    public boolean getIsFinal() {
         return isFinal;
     }
 

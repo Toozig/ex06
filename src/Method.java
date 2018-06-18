@@ -1,21 +1,33 @@
-//package src;
-//import
-//import java.util.List;
-//
-//public class Method extends Scope {
-//
-//
-//    public Method(Scope father, List text){
-//        super(father, text);
-//    }
-//
-//    public boolean isNameValid(){
-//        return false;
-//    }
-//
-//    @Override
-//    protected boolean isArgValid() {
-//
-//        return false;
-//    }
-//}
+import jdk.nashorn.internal.runtime.Scope;
+
+import java.util.ArrayList;
+
+public class Method extends Scope {
+
+    private ArrayList<Variables> arguments;
+    private String name;
+
+    public Method(Scope father, ArrayList<Variables> arguments, String name) throws src.MyExceptions {
+        super(father, null);
+        this.name = name;
+        this. arguments = isLegalVar(arguments);
+    }
+
+    // checks if the method variable ar valid
+    private ArrayList<Variables> isLegalVar(ArrayList<Variables> varList) throws src.MyExceptions {
+        for (Variables variable: varList) {
+            if(variable.getData() != null){
+                throw new src.MyExceptions(); // todo exceptions , initialized variable
+            }
+        }
+        return varList;
+    }
+
+    public ArrayList<Variables> getArguments() {
+        return arguments;
+    }
+
+    public String getName() {
+        return name;
+    }
+}
