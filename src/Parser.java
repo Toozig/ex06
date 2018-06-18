@@ -15,6 +15,7 @@ public class Parser {
 
     public static final String FALSE = "false";
     public static final String TRUE = "true";
+    public static final String GET_METHOD_NAME_REGEX = "\\s*(.*)\\s*\\(";
     private static HashMap<String, String> pattenToDefDict;
     public static final String VARIABLE = "Variable";
     public static final String METHOD_DECLARE = "MethodDeclare";
@@ -45,7 +46,7 @@ public class Parser {
     private static final String END_STATEMENT = ";";
     private static final String SCOPE_OPENING = "{";
     public static final String INSIDE_PARRENTESS = "\\((.*?)\\)\\s*\\{" + "\\s*";
-    public static final String GET_INSIDE_PERENTLESS_INFO = "\\((.*?)\\)\\s*\\{\\s*";
+    public static final String GET_INSIDE_PERENTLESS_INFO = "\\((.*?)\\)\\s*(\\{|\\;)\\s*";
     public static final String METHOD_NAME = "\\s*void\\s*(.*?)\\s*\\(\\s*";
     public static final String LOGICAL_OPERATORS = "(\\|\\||&&)";
     public static final String CONDITION_PATTEREN = "(^\\s*" + LOGICAL_OPERATORS + ")|" +
@@ -145,8 +146,6 @@ public class Parser {
         varLine[FIRST_VAR_DECLARE] = varLine[FIRST_VAR_DECLARE].replace(type, EMPTYSTRING);
         String[] variableString = varLine[FIRST_VAR_DECLARE].split(EQUALS);
         String[] finalLst = trimStringLst(variableString);
-        Variables var;
-        ArrayList<Variables> variables;
         Object data = null;
         createVar(finalLst, data, type, isFinal, scope);
         for (int i = 1; i < varLine.length; i++) {
@@ -183,6 +182,29 @@ public class Parser {
         ArrayList<Variables> arguments = parseVar(methodVars, new ScopeC(null));
         Method methodScope = new Method(scope,arguments,methodName);
         return methodScope;
+    }
+
+    protected ScopeC parseMethodCall(ScopeC scope, String line) throws MyExceptions {
+        String methodName = extractString(line, GET_METHOD_NAME_REGEX);
+        methodName = methodName.trim();
+        Method method = scope.getMethod(methodName);
+        String methodArgumentsString = extractString(line, GET_INSIDE_PERENTLESS_INFO);
+        methodArgumentsString = methodArgumentsString.replace(WHITE_SPACE, EMPTYSTRING);
+        String[] methodArgArr = methodArgumentsString.split(COMMA);
+        ArrayList<Variables> methodVar = method.getArguments();
+        if(methodArgArr.length != methodVar.size()){
+            throw new MyExceptions();  // todo not enough arguemts (or too many)
+        }
+        for (int i = 0; i < methodArgArr.length; i++){
+            String input = methodArgArr[i];
+            Variables varArg = methodVar.get(i);
+            String argType = varArg.getType();
+            try {
+                dataAccordingToType(input, argType);
+            } catch (NumberFormatException e) {
+            }
+        }
+        return scope;
     }
 
     // Get a substring of a string by using regex

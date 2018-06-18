@@ -47,6 +47,17 @@ public class ScopeC {
         return false;
     }
 
+    protected Method getMethod(String methodName) throws src.MyExceptions {
+        for (Method method :
+                methodArr) {
+            if(method.getName().equals(methodName)){
+                return method;
+            }
+
+        }
+        throw new src.MyExceptions();
+    }
+
 
 
     protected void addVariable(Variables var){
