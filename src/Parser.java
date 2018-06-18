@@ -140,7 +140,7 @@ public class Parser {
 
 
     // todo method that takes a line of var deceleration and turns it into varibales
-    protected ArrayList<Variables> parseVar(String line, Scope scope) throws MyExceptions {
+    protected ArrayList<Variables> parseVar(String line, Scope scope) {
         ArrayList<Variables> vars = new ArrayList<>();
         String[] varLine = line.split(COMMA);
         varLine[varLine.length - 1] = varLine[varLine.length - 1].replace(END_STATEMENT, EMPTYSTRING);
@@ -153,7 +153,7 @@ public class Parser {
         Variables var;
         ArrayList<Variables> variables;
         Object data = null;
-        vars.add(createVar(finalLst, data, type, isFinal, scope));
+        createVar(finalLst, data, type, isFinal, scope);
         for (int i = 1; i < varLine.length; i++) {
             finalLst = trimStringLst(varLine[i].split(EQUALS));
             data = null;
@@ -165,37 +165,29 @@ public class Parser {
     }
 
 
-//    /**
-//     * -     * This method  turns a method deceleration into a scope repressing the method
-//     * -     * @param line the line in the java file which declare the method
-//     * -     * @param scope Scope of the current scope
-//     * -     * @return Scope of the created method
-//     * -
-//     */
-//    protected Scope parseMethodDeceleration(String line, Scope scope) throws MyExceptions {
-//        String methodVars = extractString(line, GET_INSIDE_PERENTLESS_INFO);
-//        Pattern pattern;
-//        Matcher matcher;
-//        pattern = Pattern.compile(METHOD_NAME);
-//        matcher = pattern.matcher(line);
-//        matcher.find();
-//        String methodName = matcher.group(1);
-//        if (!isNameValid(methodName)) {
-//            throw new MyExceptions(); //todo exceptions
-//        }
-//        Method methodScope = new Method(scope,methodName ,new ArrayList<Variables>)
-//        ArrayList<Variables> arguments = parseVar(methodVars, scope);
-//        methodScope.setArguments(arguments);
-//        return methodScope;
-//    }
-
-    private boolean isThereAnotherVarIdentical (String name,Scope scope){
-        for (Variables var : scope.getVarArray()){
-            if(var.getName().equals(name)){
-                return true;
-            }
+    /**
+     * -     * This method  turns a method deceleration into a scope repressing the method
+     * -     * @param line the line in the java file which declare the method
+     * -     * @param scope Scope of the current scope
+     * -     * @return Scope of the created method
+     * -
+     */
+    protected Scope parseMethodDeceleration(String line, Scope scope) throws MyExceptions {
+        String methodVars = extractString(line, GET_INSIDE_PERENTLESS_INFO);
+        Pattern pattern;
+        Matcher matcher;
+        pattern = Pattern.compile(METHOD_NAME);
+        matcher = pattern.matcher(line);
+        matcher.find();
+        String methodName = matcher.group(1);
+        if (!isNameValid(methodName)) {
+            throw new MyExceptions(); //todo exceptions
         }
-    return false;}
+        Method methodScope = new Method(scope,methodName ,new ArrayList<Variables>)
+        ArrayList<Variables> arguments = parseVar(methodVars, scope);
+        methodScope.setArguments(arguments);
+        return methodScope;
+    }
 
     // Get a substring of a string by using regex
     private String extractString(String line, String regex) {
@@ -214,7 +206,7 @@ public class Parser {
     }
 
 
-    private Variables createVar(String[] line, Object data, String type, Boolean isFinal, Scope scope) throws NumberFormatException, MyExceptions {
+    private Variables createVar(String[] line, Object data, String type, Boolean isFinal, Scope scope) throws NumberFormatException {
         String name = line[0];
         switch (line.length) {
             case 2:
@@ -376,7 +368,7 @@ public class Parser {
         }
         String[] conditionsArr = conditions.split(LOGICAL_OPERATORS);
         for (String condition : conditionsArr) {
-            if (isConditionValid(scope, condition));
+            if (isConditionValid(scope, condition)) break;
         }
         return new Scope(scope, null, IF_WHILE_BLOCK);
     }
@@ -395,6 +387,7 @@ public class Parser {
             if (isConditionTextValid(var.getData().toString())) {
                 return true;
             }
+            throw new MyExceptions(); //todo variable is not a double/int/ initialized
         }
         return false;
     }

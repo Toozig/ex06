@@ -1,34 +1,30 @@
 import java.util.ArrayList;
 
 public enum TypeFactory {
-
-    Variable {
-        protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
-            ArrayList<Variables> varArr = parser.parseVar(line, scope);
-            for (Variables var : varArr) {
-                scope.addVariable(var);
-            }
+    Variable{
+        protected Scope interpret(String line, Scope scope){
+            parser.parseVar(line,scope);
             return scope;
         }
 
 
     },
-    MethodDeclare {
+    MethodDeclare{
         protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
 //            Method innerScope = parser.parseMethodDeceleration(line, scope);
 //            scope.addInnerScope(innerScope);
             return scope;
-        }
+            }
 
     },
-    VariableAssignment {
-        protected Scope interpret(String line, Scope scope) {
-            parser.assignVar(line, scope);
+    VariableAssignment{
+        protected Scope interpret(String line, Scope scope){
+            parser.assignVar(line,scope);
             return scope;
         }
 
     },
-    IfWhileBlock {
+    IfWhileBlock{
         protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
             Scope innerScope = parser.ParesIfWhile(line, scope);
             scope.addInnerScope(innerScope);
@@ -37,23 +33,23 @@ public enum TypeFactory {
         }
 
     },
-    MethodCall {
-        protected Scope interpret(String line, Scope scope) {
+    Method_Call{
+        protected Scope interpret(String line, Scope scope){
             return scope.getFather();
         }
 
     },
-    lineError {
+    line_Error{
         protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
             throw new src.MyExceptions();
         }
 
 
     },
-    ScopeClosing {
+    Scope_Closing{
         protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
             Scope father = scope.getFather();
-            if (father == null) {
+            if(father == null){
                 throw new src.MyExceptions(); // todo exception handling
             }
             return scope.getFather();
@@ -66,19 +62,17 @@ public enum TypeFactory {
             return scope;
         }
     },
-    Note {
+    Note{
         protected Scope interpret(String line, Scope scope) {
             return scope;
         }
     },
-    Empty_line {
+    Empty_line{
         protected Scope interpret(String line, Scope scope) {
             return scope;
         }
     };
-
     abstract protected Scope interpret(String line, Scope scope) throws src.MyExceptions;
-
     Parser parser = new Parser();
 
 }

@@ -1,33 +1,34 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class  Scope {
+public class ScopeC {
 
-    private List<String> textArray;
-    private Scope father;
+    private ScopeC father;
     private ArrayList<Variables> varArray;
-    private ArrayList<Scope> innerScopeArr;
-    private String name;
+    private ArrayList<ScopeC> innerScopeArr;
+    private ArrayList<Method> methodArr;
 
-    public Scope(Scope father, List<String> text, String name){
-        this.textArray = text;
+    public void addToMethodArr(Method method) {
+        this.methodArr.add(method);
+    }
+
+    public ScopeC(ScopeC father){
         varArray = new ArrayList<>();
         this.father = father;
-        innerScopeArr = new ArrayList<>();
-        textArray = text;
-        this.name = name;
+        this.innerScopeArr = new ArrayList<>();
+        this.methodArr = new ArrayList<>();
     }
 
-    public List<String> getTextArray() {
-        return textArray;
-    }
 
-    public Scope getFather() {
+    public ScopeC getFather() {
         return father;
     }
     public ArrayList<Variables> getVarArray(){
+
         return varArray;
     }
+
+
     public Variables getVariable(String variable){
         for (Variables var: varArray) {
             if(var.getName().equals(variable)){
@@ -52,8 +53,9 @@ public class  Scope {
         varArray.add(var);
     }
 
-    protected void addInnerScope(Scope innerScope){
-        innerScopeArr.add(innerScope);
+    protected void addInnerScope(ScopeC innerScopeC){
+
+        innerScopeArr.add(innerScopeC);
     }
 
 
