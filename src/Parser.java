@@ -96,7 +96,7 @@ public class Parser {
         dictionary.put(VariableCreation, VARIABLE);
         dictionary.put(MethodDeceleration, METHOD_DECLARE);
         dictionary.put(MethodCall, METHOD_CALL);
-        dictionary.put(VariableAssignment, VariableAssignment);
+        dictionary.put(VariableAssignment, VARIABLE_ASSIGNMENT);
         dictionary.put(IfWhile, IF_WHILE_BLOCK);
         dictionary.put(ScopeClosing, SCOPE_CLOSING);
         dictionary.put(Note, NOTE);
@@ -105,27 +105,6 @@ public class Parser {
         return dictionary;
     }
 
-    /**
-     -     * This method  turns a method deceleration into a scope repressing the method
-     -     * @param line the line in the java file which declare the method
-     -     * @param scope Scope of the current scope
-     -     * @return Scope of the created method
-     -     */
-        protected Scope parseMethodDeceleration(String line, Scope scope) throws MyExceptions {
-                    String methodVars = extractString(line, GET_INSIDE_PERENTLESS_INFO);
-                    Pattern pattern;
-                    Matcher matcher;
-                    pattern = Pattern.compile(METHOD_NAME);
-                    matcher = pattern.matcher(line);
-                    matcher.find();
-                    String methodName = matcher.group(1);
-                    if(!isNameValid(methodName)){
-                            throw new MyExceptions(); //todo exceptions
-                        }
-                    Scope methodScope = new Scope(scope, null, methodName);
-                    parseVar(methodVars, methodScope);
-                    return methodScope;
-                }
 
 
     protected void assignVar(String line, Scope scope) {
@@ -199,8 +178,9 @@ public class Parser {
         if (!isNameValid(methodName)) {
             throw new MyExceptions(); //todo exceptions
         }
-        Scope methodScope = new Scope(scope, null, methodName);
-        parseVar(methodVars, methodScope);
+        Method methodScope = new Method(scope,methodName ,new ArrayList<Variables>)
+        ArrayList<Variables> arguments = parseVar(methodVars, scope);
+        methodScope.setArguments(arguments);
         return methodScope;
     }
 
