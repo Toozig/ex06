@@ -105,6 +105,28 @@ public class Parser {
         return dictionary;
     }
 
+    /**
+     -     * This method  turns a method deceleration into a scope repressing the method
+     -     * @param line the line in the java file which declare the method
+     -     * @param scope Scope of the current scope
+     -     * @return Scope of the created method
+     -     */
+        protected Scope parseMethodDeceleration(String line, Scope scope) throws MyExceptions {
+                    String methodVars = extractString(line, GET_INSIDE_PERENTLESS_INFO);
+                    Pattern pattern;
+                    Matcher matcher;
+                    pattern = Pattern.compile(METHOD_NAME);
+                    matcher = pattern.matcher(line);
+                    matcher.find();
+                    String methodName = matcher.group(1);
+                    if(!isNameValid(methodName)){
+                            throw new MyExceptions(); //todo exceptions
+                        }
+                    Scope methodScope = new Scope(scope, null, methodName);
+                    parseVar(methodVars, methodScope);
+                    return methodScope;
+                }
+
 
     protected void assignVar(String line, Scope scope) {
         String[] varLine = line.split(COMMA);

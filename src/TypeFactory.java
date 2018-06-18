@@ -8,8 +8,8 @@ public enum TypeFactory {
     },
     MethodDeclare{
         protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
-            Method innerScope = parser.parseMethodDeceleration(line, scope);
-            scope.addInnerScope(innerScope);
+//            Method innerScope = parser.parseMethodDeceleration(line, scope);
+//            scope.addInnerScope(innerScope);
             return scope;
             }
 
