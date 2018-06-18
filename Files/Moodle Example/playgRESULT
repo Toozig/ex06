@@ -1,22 +1,27 @@
-final char c = 'b'; ---> Variable
+// A very complex test ---> Note
+//I am just a comment ---> Note
+//int a = 5; ---> Note
+//final int b = 3; ---> Note
  ---> Empty_line
-// comment ---> Note
+void foo(int a, boolean b) { ---> MethodDeclare
+	// Hello ---> lineError
+	int c = a; ---> Variable
+	return; ---> Return
+} ---> ScopeClosing
  ---> Empty_line
-void foo() { ---> MethodDeclare
-	while(true) { ---> IfWhileBlock
-		if (boo(1,2,3,"S")) { ---> IfWhileBlock
-			doo(); ---> MethodCall
-		} ---> ScopeClosing
+void doo() { ---> MethodDeclare
+	if (true) { ---> IfWhileBlock
+		return; ---> Return
+	} ---> ScopeClosing
+	goo(5, 44); ---> lineError
+	while(true || 0 || 1) { ---> IfWhileBlock
+		doo(); ---> MethodCall
 	} ---> ScopeClosing
  ---> Empty_line
 	return; ---> Return
 } ---> ScopeClosing
  ---> Empty_line
-void boo(int a, int b, int c1, String d) { ---> MethodDeclare
-	char e = c; ---> Variable
-	return; ---> Return
-}  ---> ScopeClosing
- ---> Empty_line
-void doo(int a1, int a2) { ---> MethodDeclare
+void goo(int h, int i) { ---> MethodDeclare
+	int j = a; ---> Variable
 	return; ---> Return
 } ---> ScopeClosing
