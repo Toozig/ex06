@@ -2,13 +2,13 @@ import jdk.nashorn.internal.runtime.Scope;
 
 import java.util.ArrayList;
 
-public class Method extends Scope {
+public class Method extends ScopeC {
 
     private ArrayList<Variables> arguments;
     private String name;
 
-    public Method(Scope father, ArrayList<Variables> arguments, String name) throws src.MyExceptions {
-        super(father, null);
+    public Method(ScopeC father, ArrayList<Variables> arguments, String name) throws src.MyExceptions {
+        super(father);
         this.name = name;
         this. arguments = isLegalVar(arguments);
     }
@@ -21,6 +21,10 @@ public class Method extends Scope {
             }
         }
         return varList;
+    }
+
+    public void setArguments(ArrayList<Variables> arguments) {
+        this.arguments = arguments;
     }
 
     public ArrayList<Variables> getArguments() {

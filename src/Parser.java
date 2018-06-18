@@ -107,7 +107,7 @@ public class Parser {
 
 
 
-    protected void assignVar(String line, Scope scope) {
+    protected void assignVar(String line, ScopeC scope) {
         String[] varLine = line.split(COMMA);
         varLine[varLine.length - 1] = varLine[varLine.length - 1].replace(END_STATEMENT, EMPTYSTRING);
         for (String var : varLine) {
@@ -135,7 +135,7 @@ public class Parser {
 
 
     // todo method that takes a line of var deceleration and turns it into varibales
-    protected ArrayList<Variables> parseVar(String line, Scope scope) {
+    protected ArrayList<Variables> parseVar(String line, ScopeC scope) {
         ArrayList<Variables> vars = new ArrayList<>();
         String[] varLine = line.split(COMMA);
         varLine[varLine.length - 1] = varLine[varLine.length - 1].replace(END_STATEMENT, EMPTYSTRING);
@@ -160,14 +160,16 @@ public class Parser {
     }
 
 
+
+
     /**
      * -     * This method  turns a method deceleration into a scope repressing the method
      * -     * @param line the line in the java file which declare the method
-     * -     * @param scope Scope of the current scope
-     * -     * @return Scope of the created method
+     * -     * @param scope ScopeC of the current scope
+     * -     * @return ScopeC of the created method
      * -
      */
-    protected Scope parseMethodDeceleration(String line, Scope scope) throws MyExceptions {
+    protected Method parseMethodDeceleration(String line, ScopeC scope) throws MyExceptions {
         String methodVars = extractString(line, GET_INSIDE_PERENTLESS_INFO);
         Pattern pattern;
         Matcher matcher;
@@ -178,9 +180,8 @@ public class Parser {
         if (!isNameValid(methodName)) {
             throw new MyExceptions(); //todo exceptions
         }
-        Method methodScope = new Method(scope,methodName ,new ArrayList<Variables>)
-        ArrayList<Variables> arguments = parseVar(methodVars, scope);
-        methodScope.setArguments(arguments);
+        ArrayList<Variables> arguments = parseVar(methodVars, new ScopeC(null));
+        Method methodScope = new Method(scope,arguments,methodName);
         return methodScope;
     }
 
@@ -201,7 +202,7 @@ public class Parser {
     }
 
 
-    private Variables createVar(String[] line, Object data, String type, Boolean isFinal, Scope scope) throws NumberFormatException {
+    private Variables createVar(String[] line, Object data, String type, Boolean isFinal, ScopeC scope) throws NumberFormatException {
         String name = line[0];
         switch (line.length) {
             case 2:
@@ -261,7 +262,7 @@ public class Parser {
         throw new NumberFormatException();
     }
 
-    private String CheckIfExistVar(String varData, String type, Scope scope) {
+    private String CheckIfExistVar(String varData, String type, ScopeC scope) {
         Variables existVar = scope.getVariable(varData);
         if (existVar != null) {
             if (existVar.getType().equals(type)) {
@@ -341,7 +342,7 @@ public class Parser {
         }
     }
 
-    protected Scope ParesIfWhile(String line, Scope scope) throws MyExceptions {
+    protected ScopeC ParesIfWhile(String line, ScopeC scope) throws MyExceptions {
         String conditions = extractString(line, GET_INSIDE_PERENTLESS_INFO);
         Pattern pattern = Pattern.compile(CONDITION_PATTEREN);
         Matcher matcher = pattern.matcher(conditions);
@@ -352,11 +353,11 @@ public class Parser {
         for (String condition : conditionsArr) {
             if (isConditionValid(scope, condition)) break;
         }
-        return new Scope(scope, null, IF_WHILE_BLOCK);
+        return new ScopeC(scope);
     }
 
     // checks if a condition in if\while block is a valid condition.
-    private boolean isConditionValid(Scope scope, String condition) throws MyExceptions {
+    private boolean isConditionValid(ScopeC scope, String condition) throws MyExceptions {
         condition = condition.trim();
         if (!(isConditionTextValid(condition))) {
             Variables var = scope.getVariable(condition); // condition might be variable

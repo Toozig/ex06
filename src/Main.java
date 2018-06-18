@@ -16,14 +16,14 @@ public class Main {
 
         Parser parser = new Parser("Files/Moodle Example/playg");
         List<String> javadoc = parser.getJavaDoc();
-        Scope curScope = new Scope(null, new ArrayList<>(), "Global");
+        ScopeC curScopeC = new ScopeC(null);
 
         for (String commandLine : javadoc) {
             String lineType = parser.lineDefining(commandLine);
             TypeFactory line = TypeFactory.valueOf(lineType);
-            if (curScope.getFather() == null) {
+            if (curScopeC.getFather() == null) {
                 try{
-                    curScope = line.interpret(commandLine, curScope);
+                    curScopeC = line.interpret(commandLine, curScopeC);
                 }
                 catch (NumberFormatException e){
                     System.out.println("1");
