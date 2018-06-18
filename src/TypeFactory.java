@@ -1,5 +1,3 @@
-import src.MyExceptions;
-
 public enum TypeFactory {
     Variable{
         protected Scope interpret(String line, Scope scope){
@@ -8,10 +6,12 @@ public enum TypeFactory {
         }
 
     },
-    Method_Declare{
-        protected Scope interpret(String line, Scope scope){
-            return scope.getFather();
-        }
+    MethodDeclare{
+        protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
+//            Method innerScope = parser.parseMethodDeceleration(line, scope);
+//            scope.addInnerScope(innerScope);
+            return scope;
+            }
 
     },
     VariableAssignment{
@@ -21,9 +21,12 @@ public enum TypeFactory {
         }
 
     },
-    If_While_Block{
-        protected Scope interpret(String line, Scope scope){
-            return scope.getFather();
+    IfWhileBlock{
+        protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
+            Scope innerScope = parser.ParesIfWhile(line, scope);
+            scope.addInnerScope(innerScope);
+            return innerScope;
+
         }
 
     },
@@ -41,7 +44,11 @@ public enum TypeFactory {
 
     },
     Scope_Closing{
-        protected Scope interpret(String line, Scope scope){
+        protected Scope interpret(String line, Scope scope) throws src.MyExceptions {
+            Scope father = scope.getFather();
+            if(father == null){
+                throw new src.MyExceptions(); // todo exception handling
+            }
             return scope.getFather();
         }
     },
@@ -53,6 +60,11 @@ public enum TypeFactory {
         }
     },
     Note{
+        protected Scope interpret(String line, Scope scope) {
+            return scope;
+        }
+    },
+    Empty_line{
         protected Scope interpret(String line, Scope scope) {
             return scope;
         }

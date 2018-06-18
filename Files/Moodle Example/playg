@@ -1,2 +1,24 @@
-int a=8,b,c;
-b=5,c=a;
+
+final char c = 'b';
+
+// comment
+
+void foo() {
+	while(true) {
+		if (boo(1,2,3,"S")) {
+			doo();
+		}
+	}
+
+	return;
+}
+
+void boo(int a, int b, int c1, String d) {
+	char e = c;
+	return;
+} 
+
+void doo(int a1, int a2) {
+	return;
+}
+

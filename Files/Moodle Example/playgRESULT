@@ -1,22 +1,22 @@
 final char c = 'b'; ---> Variable
- ---> Empty line
+ ---> Empty_line
 // comment ---> Note
- ---> Empty line
+ ---> Empty_line
 void foo() { ---> MethodDeclare
 	while(true) { ---> IfWhileBlock
 		if (boo(1,2,3,"S")) { ---> IfWhileBlock
 			doo(); ---> MethodCall
 		} ---> ScopeClosing
 	} ---> ScopeClosing
- ---> Empty line
+ ---> Empty_line
 	return; ---> Return
 } ---> ScopeClosing
- ---> Empty line
+ ---> Empty_line
 void boo(int a, int b, int c1, String d) { ---> MethodDeclare
 	char e = c; ---> Variable
 	return; ---> Return
-} ---> ScopeClosing
- ---> Empty line
+}  ---> ScopeClosing
+ ---> Empty_line
 void doo(int a1, int a2) { ---> MethodDeclare
 	return; ---> Return
 } ---> ScopeClosing
