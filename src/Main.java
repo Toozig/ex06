@@ -16,16 +16,21 @@ public class Main {
 
         Parser parser = new Parser("Files/Moodle Example/playg");
         List<String> javadoc = parser.getJavaDoc();
-        Scope curScope = new Scope(null,new ArrayList<>(), "Global");
+        Scope curScope = new Scope(null, new ArrayList<>(), "Global");
 
         for (String commandLine : javadoc) {
             String lineType = parser.lineDefining(commandLine);
             TypeFactory line = TypeFactory.valueOf(lineType);
-            if(curScope.getFather() == null) {
-                curScope = line.interpret(commandLine, curScope);
+            if (curScope.getFather() == null) {
+                try{
+                    curScope = line.interpret(commandLine, curScope);
+                }
+                catch (NumberFormatException e){
+                    System.out.println("1");
+                }
             }
 
         }
 
-    }
+    }}
 

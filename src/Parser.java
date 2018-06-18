@@ -156,7 +156,8 @@ public class Parser {
 
 
     // todo method that takes a line of var deceleration and turns it into varibales
-    protected void parseVar(String line, Scope scope) {
+    protected ArrayList<Variables> parseVar(String line, Scope scope) {
+        ArrayList<Variables> vars = new ArrayList<>();
         String[] varLine = line.split(COMMA);
         varLine[varLine.length - 1] = varLine[varLine.length - 1].replace(END_STATEMENT, EMPTYSTRING);
         boolean isFinal = isFinal(varLine[FIRST_VAR_DECLARE]);
@@ -172,12 +173,36 @@ public class Parser {
         for (int i = 1; i < varLine.length; i++) {
             finalLst = trimStringLst(varLine[i].split(EQUALS));
             data = null;
-            createVar(finalLst, data, type, isFinal, scope);
+            vars.add(createVar(finalLst, data, type, isFinal, scope));
 
 
         }
+        return vars;
     }
 
+
+    /**
+     * -     * This method  turns a method deceleration into a scope repressing the method
+     * -     * @param line the line in the java file which declare the method
+     * -     * @param scope Scope of the current scope
+     * -     * @return Scope of the created method
+     * -
+     */
+    protected Scope parseMethodDeceleration(String line, Scope scope) throws MyExceptions {
+        String methodVars = extractString(line, GET_INSIDE_PERENTLESS_INFO);
+        Pattern pattern;
+        Matcher matcher;
+        pattern = Pattern.compile(METHOD_NAME);
+        matcher = pattern.matcher(line);
+        matcher.find();
+        String methodName = matcher.group(1);
+        if (!isNameValid(methodName)) {
+            throw new MyExceptions(); //todo exceptions
+        }
+        Scope methodScope = new Scope(scope, null, methodName);
+        parseVar(methodVars, methodScope);
+        return methodScope;
+    }
 
     // Get a substring of a string by using regex
     private String extractString(String line, String regex) {
@@ -196,7 +221,7 @@ public class Parser {
     }
 
 
-    private void createVar(String[] line, Object data, String type, Boolean isFinal, Scope scope) {
+    private Variables createVar(String[] line, Object data, String type, Boolean isFinal, Scope scope) throws NumberFormatException {
         String name = line[0];
         switch (line.length) {
             case 2:
@@ -204,11 +229,14 @@ public class Parser {
                     data = dataAccordingToType(line[1], type);
                 } catch (NumberFormatException e) {
                     data = CheckIfExistVar(line[1], type, scope);
+                    if (data == null) {
+                        throw new NumberFormatException();
+                    }
                 }
                 break;
         }
         Variables var = new Variables(name, type, data, isFinal);
-        scope.addVariable(var);
+        return var;
     }
 
     private String[] trimStringLst(String[] lst) {
@@ -306,71 +334,70 @@ public class Parser {
     }
 
 
-
-
-
-    protected List<String> getJavaDoc () {
+    protected List<String> getJavaDoc() {
         return javaDoc;
     }
 
-        /**
-         * Checks if the end of a line is legal
-         * @param line the checked line
-         * @param lineDefinition the defneition of the line
-         * @return True if the line have legal ending, false otherwise.
-         */
-        private boolean lineEnd (String line, String lineDefinition) {
-            line = line.replaceAll(WHITE_SPACE, "");
-            switch (lineDefinition){
-                case METHOD_DECLARE:
-                case IF_WHILE_BLOCK:
-                    return line.endsWith(SCOPE_OPENING);
-                case VARIABLE_ASSIGNMENT:
-                case VARIABLE:
-                case METHOD_CALL:
-                case RETURN:
-                    return line.endsWith(END_STATEMENT);
-                default:
-                    return true;
-            }
+    /**
+     * Checks if the end of a line is legal
+     *
+     * @param line           the checked line
+     * @param lineDefinition the defneition of the line
+     * @return True if the line have legal ending, false otherwise.
+     */
+    private boolean lineEnd(String line, String lineDefinition) {
+        line = line.replaceAll(WHITE_SPACE, "");
+        switch (lineDefinition) {
+            case METHOD_DECLARE:
+            case IF_WHILE_BLOCK:
+                return line.endsWith(SCOPE_OPENING);
+            case VARIABLE_ASSIGNMENT:
+            case VARIABLE:
+            case METHOD_CALL:
+            case RETURN:
+                return line.endsWith(END_STATEMENT);
+            default:
+                return true;
         }
+    }
 
-        protected Scope ParesIfWhile(String line, Scope scope) throws MyExceptions {
-            String conditions = extractString(line, GET_INSIDE_PERENTLESS_INFO);
-            Pattern pattern = Pattern.compile(CONDITION_PATTEREN);
-            Matcher matcher = pattern.matcher(conditions);
-            if(matcher.find()){
-                throw new MyExceptions(); // todo expectations
-            }
-            String [] conditionsArr = conditions.split(LOGICAL_OPERATORS);
-            for (String condition: conditionsArr) {
-                if (isConditionValid(scope, condition)) break;
-            }
-            return new Scope(scope, null, IF_WHILE_BLOCK);
+    protected Scope ParesIfWhile(String line, Scope scope) throws MyExceptions {
+        String conditions = extractString(line, GET_INSIDE_PERENTLESS_INFO);
+        Pattern pattern = Pattern.compile(CONDITION_PATTEREN);
+        Matcher matcher = pattern.matcher(conditions);
+        if (matcher.find()) {
+            throw new MyExceptions(); // todo expectations
         }
+        String[] conditionsArr = conditions.split(LOGICAL_OPERATORS);
+        for (String condition : conditionsArr) {
+            if (isConditionValid(scope, condition)) break;
+        }
+        return new Scope(scope, null, IF_WHILE_BLOCK);
+    }
 
-        // checks if a condition in if\while block is a valid condition.
+    // checks if a condition in if\while block is a valid condition.
     private boolean isConditionValid(Scope scope, String condition) throws MyExceptions {
         condition = condition.trim();
-        if(!(isConditionTextValid(condition))){
+        if (!(isConditionTextValid(condition))) {
             Variables var = scope.getVariable(condition); // condition might be variable
-            if(var == null){
+            if (var == null) {
                 throw new MyExceptions(); //todo exception no such variable
             }
-            if(isConditionTextValid(var.getData().toString())){
+            if (isConditionTextValid(var.getData().toString())) {
                 return true;
             }
-            throw  new MyExceptions(); //todo variable is not a double/int/ initialized
+            throw new MyExceptions(); //todo variable is not a double/int/ initialized
         }
         return false;
     }
+
     // checks if a string of condition is a valid argument.
-    private boolean isConditionTextValid(String string){
+    private boolean isConditionTextValid(String string) {
         Pattern pattern;
         Matcher matcher;
         pattern = Pattern.compile(INT_OR_DOUBLE_REGEX);
         matcher = pattern.matcher(string);
-        return matcher.matches() || string.equals(FALSE)||string.equals(TRUE);
+        return matcher.matches() || string.equals(FALSE) || string.equals(TRUE);
 
     }
 }
