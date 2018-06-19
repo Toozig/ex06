@@ -186,8 +186,8 @@ public class Parser {
 
 
     // todo method that takes a line of var deceleration and turns it into varibales
-    protected ArrayList<Variables<Object>> parseVar(String line, ScopeC scope) throws MyExceptions {
-        ArrayList<Variables<Object>> vars = new ArrayList<>();
+    protected ArrayList<Variables> parseVar(String line, ScopeC scope) throws MyExceptions {
+        ArrayList<Variables> vars = new ArrayList<>();
         String[] varLine = line.split(COMMA);
         varLine[varLine.length - 1] = varLine[varLine.length - 1].replace(END_STATEMENT, EMPTYSTRING);
         boolean isFinal = isFinal(varLine[FIRST_VAR_DECLARE]);
@@ -284,7 +284,7 @@ public class Parser {
     }
 
 
-    private Variables<Object> createVar(String[] line, Object data, String type, Boolean isFinal, ScopeC scope) throws NumberFormatException, MyExceptions {
+    private Variables createVar(String[] line, Object data, String type, Boolean isFinal, ScopeC scope) throws NumberFormatException, MyExceptions {
         String name = line[0];
         switch (line.length) {
             case 2:
@@ -308,7 +308,8 @@ public class Parser {
         if (isFinal && data == null) {
             throw new MyExceptions(Final_Var_No_INITIALIZION);
         }
-        return new Variables<>(name, type, data, isFinal);
+        Variables var = new Variables(name, type, data, isFinal);
+        return var;
     }
 
 
@@ -392,7 +393,7 @@ public class Parser {
                 if (lineEnd(fullLine, lineDef)) {
                     return lineDef;
                 } else {
-                    throw new MyExceptions(INVALID_LINE);
+                    throw new MyExceptions(INVALID_LINE); //todo exception handling
                 }
             }
         }
@@ -410,13 +411,14 @@ public class Parser {
             Path filePath = get(path);
             return Files.readAllLines(filePath);
         }
+        // TODO see HTF we handle the exception.
         catch (IOException e) {
             throw new MyExceptions(INVALID_FILE);
         }
     }
 
 
-     List<String> getJavaDoc() {
+    protected List<String> getJavaDoc() {
         return javaDoc;
     }
 
@@ -443,7 +445,7 @@ public class Parser {
         }
     }
 
-     ScopeC ParesIfWhile(String line, ScopeC scope) throws MyExceptions {
+    protected ScopeC ParesIfWhile(String line, ScopeC scope) throws MyExceptions {
         String conditions = extractString(line, GET_INSIDE_PERENTLESS_INFO);
         Pattern pattern = Pattern.compile(CONDITION_PATTEREN);
         Matcher matcher = pattern.matcher(conditions);
@@ -464,23 +466,17 @@ public class Parser {
         if (!(isConditionTextValid(condition))) {
             Variables var = scope.getVariable(condition); // condition might be variable
             if (var == null) {
-                throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT);
+                throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); //todo exception no such variable
             }
-            if (isaBooleanArgValid(var)) {
+            if (var.getData() == null || !(var.getType().equals(BOOLEAN) || var.getType().equals(DOUBLE) || var.getType().equals(INT))) {
                 throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT);
             }
             if (isConditionTextValid(var.getData().toString())) {
                 return true;
             }
-            throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT);
+            throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); //todo variable is not a double/int/ initialized
         }
         return false;
-    }
-
-    // checks if a given variable is a valid boolean argument
-    private boolean isaBooleanArgValid(Variables var) {
-        return var.getData() == null || !(var.getType().equals(BOOLEAN) ||
-                var.getType().equals(DOUBLE) || var.getType().equals(INT));
     }
 
     // checks if a string of condition is a valid argument.
