@@ -20,8 +20,10 @@ method decleration = \s*void\s+(\s*((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))\
 
 
 
-method dec = ^\s*void\s*\S+\(.*\)\s*{\s*
-method call = ^\s*\S*\s*\(.*\)\s*;\s*
-if while = ^\s*(if|while)\s*\(.+\)\s*{\s*
-var deceleration = ^\s*(final\s*)?\w+\s\S+\s*[^;]+\;\s*
-var assignment = ^\s*.+\s*=\s*.+\s*.*;\s*
+ final static private String MethodDeceleration ="^\\s*void\\s+\\S+\\s*\\(.*\\)\\s*\\{\\s*";
+     MethodCall ="^\\s*\\S*\\s*\\(.*\\)\\s*;\\s*";
+     VariableAssignment = "^\\s*\\S+\\s*=\\s*.+\\s*.*;\\s*";
+     IfWhile = "^\\s*(if|while)\\s*\\(.+\\)\\s*\\{\\s*";
+     returnVar = "\\s*return\\s*;\\s*";
+     ScopeClosing = "\\s*}\\s*";
+     Note = "^\\/\\/.*";

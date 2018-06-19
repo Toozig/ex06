@@ -13,7 +13,7 @@ void doo() { ---> MethodDeclare
 	if (true) { ---> IfWhileBlock
 		return; ---> Return
 	} ---> ScopeClosing
-	goo(5, 44); ---> ``
+	goo(5, 44); ---> lineError
 	while(true || 0 || 1) { ---> IfWhileBlock
 		doo(); ---> MethodCall
 	} ---> ScopeClosing

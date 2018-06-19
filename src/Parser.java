@@ -60,8 +60,7 @@ public class Parser {
     final static private String VariableDeceleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
     final static private String MethodDeceleration = "\\s*void\\s+(" + Names + ")\\s*\\((" + VariableDeceleration +
             "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+\\s*)\\s*))?(\\s*\\)\\s*\\{)?\\s*";
-    final static private String MethodCall = "\\s*(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\" +
-            "(((\\s*((([a-z]|[A-Z])+)\\w*)\\s*|(_+([a-z]|[A-Z]|\\d)+))(\\)\\s*;)?|(\\s*\\)\\s*;))";
+    final static private String MethodCall = "^\\s*\\S*\\s*\\(.*\\)\\s*;\\s*";
     final static private String VariableAssignment = "\\s*(" + Names + ")\\s*=\\s*(((" + Names + "))" +
             "|(-?\\d+(.\\d+)?|(\\\"[\\w\\W]+\\\")||\\\'[\\w\\W]+\\\'))\\s*\\;?";
     final static private String IfWhile = "\\s*(if|while)\\s*((\\(.+\\)\\s*\\{\\s*)|\\(\\s*\\s*" +
