@@ -1,22 +1,22 @@
-import src.MyExceptions;
-
+package oop.ex6;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Main {
+public class Sjavac {
 
 
+    public static final String IF_WHILE_BLOCK = "IfWhileBlock";
+    public static final String METHOD_DECLARE = "MethodDeclare";
+    public static final String SCOPE_CLOSING = "ScopeClosing";
+    public static final String RETURN = "return";
+    public static final String INVALID_IN_THE_OUTER_SCOPE = "Invalid in the outer scope";
 
-    public static void main(String[] args) throws src.MyExceptions {
-        Parser parser = new Parser("Files/Moodle Example/playg");
+    public static void main(String[] args) throws MyExceptions {
+        Parser parser = new Parser(args[0]);
         List<String> javadoc = parser.getJavaDoc();
-//        String line = "int            a        , double           b         , char c";
-//        ArrayList<Variables> vars = parser.parseVarsFromMethod(line);
-//        for(Variables item:vars){
-//            System.out.println(item.getName()+" "+item.getType()+" "+item.getData()+" "+item.getIsFinal());
-//        }
+
         ScopeC curScope = new ScopeC(null);
         int counter = 0;
         for (int i = 0; i < javadoc.size() ; i++) {
@@ -24,23 +24,27 @@ public class Main {
             String lineType = parser.lineDefining(commandLine);
             Line line = new Line(commandLine, lineType);
             if (counter == 0) {
-                System.out.println(commandLine);
+                if(lineType.equals(IF_WHILE_BLOCK)||lineType.equals(RETURN)||lineType.equals(SCOPE_CLOSING)){
+                    System.err.println(INVALID_IN_THE_OUTER_SCOPE+ "in line " + commandLine);
+                    System.out.println("1");
+                    return;
+                }
                 try{
                     ScopeC newScope = line.interperate(curScope);
                     if(!newScope.equals(curScope)){
                         curScope = newScope;
                         counter++;
                     }
-                } catch (src.MyExceptions e){
+                } catch (MyExceptions e){
                     System.err.println(e.getMessage() + "in line " + commandLine);
                     System.out.println("1");
                     return;
                 }
-            }else if(lineType.equals("IfWhileBlock") || lineType.equals("MethodDeclare")){
+            }else if(lineType.equals(IF_WHILE_BLOCK) || lineType.equals(METHOD_DECLARE)){
                 counter++;
                 curScope.addScopeLines(line);
             }
-            else if(lineType.equals("ScopeClosing")){
+            else if(lineType.equals(SCOPE_CLOSING)){
                 counter--;
                 curScope.addScopeLines(line);
                 if(counter == 0){

@@ -1,3 +1,5 @@
+package oop.ex6;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,7 +62,7 @@ public class ScopeC {
         return false;
     }
 
-    protected Method getMethod(String methodName) throws src.MyExceptions {
+    protected Method getMethod(String methodName) throws MyExceptions {
         ScopeC globalScope = this;
         while(globalScope.getFather()!=null){
             globalScope=globalScope.getFather();
@@ -72,7 +74,7 @@ public class ScopeC {
             }
 
         }
-        throw new src.MyExceptions(INVALID_LINE);
+        throw new MyExceptions(INVALID_LINE);
     }
 
     public void setFather(ScopeC father) {
