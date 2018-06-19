@@ -58,8 +58,7 @@ public class Parser {
     final static private String METHOD_VARS = "(\\s*((final\\s+)?(int|boolean|double|String|char))" + WHITE_SPACE+
             Names+")\\s*";
     final static private String VariableDeceleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
-    final static private String MethodDeceleration = "\\s*void\\s+(" + Names + ")\\s*\\((" + VariableDeceleration +
-            "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+\\s*)\\s*))?(\\s*\\)\\s*\\{)?\\s*";
+    final static private String MethodDeceleration = "^\\s*void\\s+\\S+\\s*\\(.*\\)\\s\\{\\s*";
 //    final static private String MethodCall = "\\s*(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\" +
 //            "(((\\s*((([a-z]|[A-Z])+)\\w*)\\s*|(_+([a-z]|[A-Z]|\\d)+))(\\)\\s*;)?|(\\s*\\)\\s*;))";
     final static private String MethodCall = "^\\s*\\S*\\s*\\(.*\\)\\s*;\\s*";
