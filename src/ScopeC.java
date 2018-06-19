@@ -3,6 +3,7 @@ import java.util.List;
 
 public class ScopeC {
 
+    public static final String INVALID_LINE = "Invalid line";
     private ScopeC father;
     private ArrayList<Variables> varArray;
     private ArrayList<ScopeC> innerScopeArr;
@@ -67,7 +68,7 @@ public class ScopeC {
             }
 
         }
-        throw new src.MyExceptions();
+        throw new src.MyExceptions(INVALID_LINE);
     }
 
 

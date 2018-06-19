@@ -13,65 +13,77 @@ import static java.nio.file.Paths.get;
 
 public class Parser {
 
-    public static final String FALSE = "false";
-    public static final String TRUE = "true";
-    public static final String GET_METHOD_NAME_REGEX = "\\s*(.*)\\s*\\(";
-    private static HashMap<String, String> pattenToDefDict;
-    public static final String VARIABLE = "Variable";
-    public static final String METHOD_DECLARE = "MethodDeclare";
-    public static final String VARIABLE_ASSIGNMENT = "VariableAssignment";
-    public static final String NOTE = "Note";
-    public static final String COMMA = ",";
-    public static final String IF_WHILE_BLOCK = "IfWhileBlock";
-    public static final String SCOPE_CLOSING = "ScopeClosing";
-    public static final String METHOD_CALL = "MethodCall";
-    public static final String RETURN = "Return";
-    public static final String LINE_ERROR = "lineError";
-    public static final String INDENTATION = "    ";
-    public static final String NO_CHAR_BEFORE = "^";
-    public static final int OUTER_SCOPE = 0;
-    public static final int FIRST_LINE = 0;
-    public static final int CATALAN = 1;
-    public static final String WHITE_SPACE = "\\s+";
-    public static final String FINAL = "final";
-    public static final int FIRST_VAR_DECLARE = 0;
-    public static final String INT = "int";
-    public static final String DOUBLE = "double";
-    public static final String BOOLEAN = "boolean";
-    public static final String CHAR = "char";
-    public static final String STRING = "String";
-    public static final String INCOMPATIBLE_TYPE = "incompatibleType";
-    public static final String EmptyLine = " *";
-    public static final String EMPTY_LINE = "Emptyline";
-    private static final String END_STATEMENT = ";";
-    private static final String SCOPE_OPENING = "{";
-    public static final String INSIDE_PARRENTESS = "\\((.*?)\\)\\s*\\{" + "\\s*";
-    public static final String GET_INSIDE_PERENTLESS_INFO = "\\((.*?)\\)\\s*(\\{|\\;)\\s*";
-    public static final String METHOD_NAME = "\\s*void\\s*(.*?)\\s*\\(\\s*";
-    public static final String LOGICAL_OPERATORS = "(\\|\\||&&)";
-    public static final String CONDITION_PATTEREN = "(^\\s*" + LOGICAL_OPERATORS + ")|" +
+    public static final String INVALID_NAME = "Invalid name";
+    final private static String FALSE = "false";
+    final private static String TRUE = "true";
+    final private static String GET_METHOD_NAME_REGEX = "\\s*(.*)\\s*\\(";
+    final private static String VARIABLE = "Variable";
+    final private static String METHOD_DECLARE = "MethodDeclare";
+    final private static String VARIABLE_ASSIGNMENT = "VariableAssignment";
+    final private static String NOTE = "Note";
+    final private static String COMMA = ",";
+    final private static String IF_WHILE_BLOCK = "IfWhileBlock";
+    final private static String SCOPE_CLOSING = "ScopeClosing";
+    final private static String METHOD_CALL = "MethodCall";
+    final private static String RETURN = "Return";
+    final private static String LINE_ERROR = "lineError";
+    final private static String INDENTATION = "    ";
+    final private static String NO_CHAR_BEFORE = "^";
+    final private static int OUTER_SCOPE = 0;
+    final private static int FIRST_LINE = 0;
+    final private static int CATALAN = 1;
+    final private static String WHITE_SPACE = "\\s+";
+    final private static String FINAL = "final";
+    final private static int FIRST_VAR_DECLARE = 0;
+    final private static String INT = "int";
+    final private static String DOUBLE = "double";
+    final private static String BOOLEAN = "boolean";
+    final private static String CHAR = "char";
+    final private static String STRING = "String";
+    final private static String INCOMPATIBLE_TYPE = "incompatibleType";
+    final private static String EmptyLine = " *";
+    final private static String EMPTY_LINE = "Emptyline";
+    final private static String END_STATEMENT = ";";
+    final private static String SCOPE_OPENING = "{";
+    final private static String INSIDE_PARRENTESS = "\\((.*?)\\)\\s*\\{" + "\\s*";
+    final private static String GET_INSIDE_PERENTLESS_INFO = "\\((.*?)\\)\\s*(\\{|\\;)\\s*";
+    final private static String METHOD_NAME = "\\s*void\\s*(.*?)\\s*\\(\\s*";
+    final private static String LOGICAL_OPERATORS = "(\\|\\||&&)";
+    final private static String CONDITION_PATTEREN = "(^\\s*" + LOGICAL_OPERATORS + ")|" +
             LOGICAL_OPERATORS + "\\s*" + LOGICAL_OPERATORS + "|" + LOGICAL_OPERATORS + "\\s*$";
-    public static final String INT_OR_DOUBLE_REGEX = "(-?\\d)+(\\.\\d+)?";
-    private String VariableDeceleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
-    private String Names = "\\s*((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+)";
-    private List<String> javaDoc;
-    //Magic numbers
-    final private static String EQUALS = "=";
-    final private static String EMPTYSTRING = "";
-    final private String VariableDecleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
-    final private String MethodDeceleration = "\\s*void\\s+(" + Names + ")\\s*\\((" + VariableDecleration +
+    final private static String INT_OR_DOUBLE_REGEX = "(-?\\d)+(\\.\\d+)?";
+    final static private String Names = "\\s*((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+)";
+    final static private String EQUALS = "=";
+    final static private String EMPTYSTRING = "";
+    final static private String METHOD_VARS = "(\\s*((final\\s+)?(int|boolean|double|String|char))" + WHITE_SPACE+
+            Names+")\\s*";
+    final static private String VariableDeceleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
+    final static private String MethodDeceleration = "\\s*void\\s+(" + Names + ")\\s*\\((" + VariableDeceleration +
             "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+\\s*)\\s*))?(\\s*\\)\\s*\\{)?\\s*";
-    final private String MethodCall = "\\s*(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\" +
+    final static private String MethodCall = "\\s*(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\" +
             "(((\\s*((([a-z]|[A-Z])+)\\w*)\\s*|(_+([a-z]|[A-Z]|\\d)+))(\\)\\s*;)?|(\\s*\\)\\s*;))";
-    final private String VariableAssignment = "\\s*(" + Names + ")\\s*=\\s*(((" + Names + "))" +
+    final static private String VariableAssignment = "\\s*(" + Names + ")\\s*=\\s*(((" + Names + "))" +
             "|(-?\\d+(.\\d+)?|(\\\"[\\w\\W]+\\\")||\\\'[\\w\\W]+\\\'))\\s*\\;?";
-    final private String IfWhile = "\\s*(if|while)\\s*((\\(.+\\)\\s*\\{\\s*)|\\(\\s*\\s*" +
+    final static private String IfWhile = "\\s*(if|while)\\s*((\\(.+\\)\\s*\\{\\s*)|\\(\\s*\\s*" +
             "(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\(" + INT_OR_DOUBLE_REGEX + ")";
-    final private String returnVar = "\\s*return\\s*;\\s*";
-    final private String ScopeClosing = "\\s*}\\s*";
-    final private String Note = "^\\/\\/.*";
-    final private String VariableCreation = VariableDeceleration + "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))" +
+    final static private String returnVar = "\\s*return\\s*;\\s*";
+    final static private String ScopeClosing = "\\s*}\\s*";
+    final static private String Note = "^\\/\\/.*";
+    final static private String VariableCreation = VariableDeceleration + "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))" +
             "\\s*(=\\s*(" + INT_OR_DOUBLE_REGEX + "|\\\"[\\w\\W]+\\\"|\\\'[\\w\\W]+\\\'|" + Names + "))?\\s*;?";
+    public static final String INVALID_BOOLEAN_ARGUMENT = "Invalid boolean argument";
+    public static final String INVALID_FILE = "Invalid sJava file";
+    public static final String INVALID_LINE = "Invalid line format";
+    public static final String EXIST_VAR = "There's another variable with the same name";
+    public static final String Final_Var_No_INITIALIZION = "Final Var must be initialize";
+    public static final String INCOMPATIBLE_VAR_DECELERATION = "Incompatible var deceleration";
+    public static final String INCOMPATIBLE_METHOD_NAME = "Incompatible method name";
+    public static final String INCOMPATIBLE_NUMBER_OF_ARGS_TO_THE_METHOD = "Incompatible number of args to the method";
+    public static final String TYPEERROR = "Incompatible args type";
+    public static final String ASSIGNING_WITH_NON_EXISTING_VARIABLE = "Assigning with non existing variable";
+    public static final String TRYING_TO_ASSIGN_NON_EXISTING_VARIABLE = "Trying to assign non existing variable";
+    private List<String> javaDoc;
+    private static HashMap<String, String> pattenToDefDict;
 
 
     /**
@@ -107,8 +119,7 @@ public class Parser {
     }
 
 
-
-    protected void assignVar(String line, ScopeC scope) {
+    protected void assignVar(String line, ScopeC scope) throws MyExceptions {
         String[] varLine = line.split(COMMA);
         varLine[varLine.length - 1] = varLine[varLine.length - 1].replace(END_STATEMENT, EMPTYSTRING);
         for (String var : varLine) {
@@ -121,14 +132,42 @@ public class Parser {
                     Object obj = dataAccordingToType(varValue, variable.getType());
                     variable.setData(obj);
                 } catch (NumberFormatException e) {
-                    Variables existVar = getExistingVar(scope,varValue,variable.getType());
+                    Variables existVar = getExistingVar(scope, varValue, variable.getType());
                     variable.setData(existVar.getData());
+                    if (existVar == null){
+                        throw new MyExceptions(ASSIGNING_WITH_NON_EXISTING_VARIABLE);
+                    }
 
                 }
             }
-            throw new NumberFormatException();
+            throw new MyExceptions(TRYING_TO_ASSIGN_NON_EXISTING_VARIABLE);
 
         }
+    }
+
+    protected ArrayList<Variables> parseVarsFromMethod(String vars) throws MyExceptions {
+        ArrayList<Variables> finalVars = new ArrayList<>();
+        String[] variables = vars.split(COMMA);
+        Variables variable;
+        Pattern pattern;
+        Matcher matcher;
+        pattern = Pattern.compile(METHOD_VARS);
+        for (String item : variables) {
+            matcher = pattern.matcher(item);
+            String[] var = item.trim().split(WHITE_SPACE);
+            if (!(var.length == 2)) {
+                throw new MyExceptions(INCOMPATIBLE_VAR_DECELERATION);
+            }
+            if (matcher.matches()) {
+                variable = new Variables(var[1], var[0], null, false);
+                finalVars.add(variable);
+            } else {
+                throw new MyExceptions(INCOMPATIBLE_VAR_DECELERATION);
+            }
+
+
+        }
+        return finalVars;
     }
 
     private Variables getExistingVar(ScopeC scope, String varValue, String type) {
@@ -181,13 +220,13 @@ public class Parser {
         matcher.find();
         String methodName = matcher.group(1);
         if (!isNameValid(methodName)) {
-            throw new MyExceptions(); //todo exceptions
+            throw new MyExceptions(INCOMPATIBLE_METHOD_NAME); //todo exceptions
         }
         ArrayList<Variables> arguments = new ArrayList<>();
-        if(!methodVars.equals(EMPTYSTRING)) { //todo  vars stuff in genetic
-            arguments = parseVar(methodVars, new ScopeC(null));
+        if (!methodVars.equals(EMPTYSTRING)) { //todo  vars stuff in genetic
+            arguments = parseVarsFromMethod(methodVars);
         }
-        return new Method(scope,arguments, methodName);
+        return new Method(scope, arguments, methodName);
     }
 
     protected ScopeC parseMethodCall(ScopeC scope, String line) throws MyExceptions {
@@ -198,10 +237,10 @@ public class Parser {
         methodArgumentsString = methodArgumentsString.replace(WHITE_SPACE, EMPTYSTRING);
         String[] methodArgArr = methodArgumentsString.split(COMMA);
         ArrayList<Variables> methodVar = method.getArguments();
-        if(methodArgArr.length != methodVar.size()){
-            throw new MyExceptions();  // todo not enough arguemts (or too many)
+        if (methodArgArr.length != methodVar.size()) {
+            throw new MyExceptions(INCOMPATIBLE_NUMBER_OF_ARGS_TO_THE_METHOD);  // todo not enough arguemts (or too many)
         }
-        for (int i = 0; i < methodArgArr.length; i++){
+        for (int i = 0; i < methodArgArr.length; i++) {
             String input = methodArgArr[i];
             Variables varArg = methodVar.get(i);
             String argType = varArg.getType();
@@ -209,8 +248,8 @@ public class Parser {
                 dataAccordingToType(input, argType);
             } catch (NumberFormatException e) {
                 Variables var = getExistingVar(scope, input, argType);
-                if(!var.getType().equals(argType)){
-                    throw new MyExceptions(); // todo arg type does not much
+                if (!var.getType().equals(argType)) {
+                    throw new MyExceptions(TYPEERROR); // todo arg type does not much
                 }
             }
         }
@@ -243,26 +282,27 @@ public class Parser {
                 } catch (NumberFormatException e) {
                     data = CheckIfExistVar(line[1], type, scope);
                     if (data == null) {
-                        throw new NumberFormatException();
+                        throw new MyExceptions(ASSIGNING_WITH_NON_EXISTING_VARIABLE);
                     }
                 }
                 break;
         }
 
-        if(!isNameValid(name)){
-            throw new MyExceptions();
+        if (!isNameValid(name)) {
+            throw new MyExceptions(INVALID_NAME);
         }
-        if (isThereAnotherVarIdentical(name,scope)){
-            throw new MyExceptions();
+        if (isThereAnotherVarIdentical(name, scope)) {
+            throw new MyExceptions(EXIST_VAR);
         }
-        if(isFinal&&data==null){
-            throw new MyExceptions();
+        if (isFinal && data == null) {
+            throw new MyExceptions(Final_Var_No_INITIALIZION);
         }
         Variables var = new Variables(name, type, data, isFinal);
         return var;
     }
 
-    private boolean isThereAnotherVarIdentical (String name,ScopeC scope) {
+
+    private boolean isThereAnotherVarIdentical(String name, ScopeC scope) {
         for (Variables var : scope.getVarArray()) {
             if (var.getName().equals(name)) {
                 return true;
@@ -303,8 +343,8 @@ public class Parser {
                 return Boolean.parseBoolean(data);
             case CHAR:
             case STRING:
-                if (data.startsWith("\"") && data.endsWith("\"")||data.startsWith("\'") && data.endsWith("\'")) {
-                    if(type.equals(CHAR)&&data.length()>3){
+                if (data.startsWith("\"") && data.endsWith("\"") || data.startsWith("\'") && data.endsWith("\'")) {
+                    if (type.equals(CHAR) && data.length() > 3) {
                         throw new NumberFormatException();
                     }
                     return data.replace("\"", EMPTYSTRING);
@@ -343,7 +383,7 @@ public class Parser {
                 if (lineEnd(fullLine, lineDef)) {
                     return lineDef;
                 } else {
-                    throw new MyExceptions(); //todo exception handling
+                    throw new MyExceptions(INVALID_LINE); //todo exception handling
                 }
             }
         }
@@ -363,9 +403,8 @@ public class Parser {
         }
         // TODO see HTF we handle the exception.
         catch (IOException e) {
-            e.printStackTrace();
+            throw new MyExceptions(INVALID_FILE);
         }
-        return null;
     }
 
 
@@ -401,7 +440,7 @@ public class Parser {
         Pattern pattern = Pattern.compile(CONDITION_PATTEREN);
         Matcher matcher = pattern.matcher(conditions);
         if (matcher.find()) {
-            throw new MyExceptions(); // todo expectations
+            throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); // todo expectations
         }
         String[] conditionsArr = conditions.split(LOGICAL_OPERATORS);
         for (String condition : conditionsArr) {
@@ -416,15 +455,15 @@ public class Parser {
         if (!(isConditionTextValid(condition))) {
             Variables var = scope.getVariable(condition); // condition might be variable
             if (var == null) {
-                throw new MyExceptions(); //todo exception no such variable
+                throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); //todo exception no such variable
             }
-            if (var.getData()==null||!(var.getType().equals(DOUBLE)||var.getType().equals(INT))) {
-                throw new MyExceptions();
+            if (var.getData() == null || !(var.getType().equals(DOUBLE) || var.getType().equals(INT))) {
+                throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT);
             }
             if (isConditionTextValid(var.getData().toString())) {
                 return true;
             }
-            throw new MyExceptions(); //todo variable is not a double/int/ initialized
+            throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); //todo variable is not a double/int/ initialized
         }
         return false;
     }

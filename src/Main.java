@@ -1,3 +1,5 @@
+import src.MyExceptions;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -8,16 +10,17 @@ public class Main {
 
 
     public static void main(String[] args) throws src.MyExceptions {
-        String mydata = "2131231 && dsadasdc || ewws";
-        Pattern pattern = Pattern.compile("(^\\s*(\\|\\||&&))|(\\|\\||&&)\\s*(\\|\\||&&)|(\\|\\||&&)\\s*$");
-        Matcher matcher = pattern.matcher(mydata);
-
-
         Parser parser = new Parser("Files/Moodle Example/playg");
         List<String> javadoc = parser.getJavaDoc();
+//        String line = "int            a        , double           b         , char c";
+//        ArrayList<Variables> vars = parser.parseVarsFromMethod(line);
+//        for(Variables item:vars){
+//            System.out.println(item.getName()+" "+item.getType()+" "+item.getData()+" "+item.getIsFinal());
+//        }
         ScopeC curScope = new ScopeC(null);
         int counter = 0;
-        for (String commandLine : javadoc) {
+        for (int i = 0; i < javadoc.size() ; i++) {
+            String commandLine = javadoc.get(i);
             String lineType = parser.lineDefining(commandLine);
             TypeFactory line = TypeFactory.valueOf(lineType);
             line.setLine(commandLine, curScope);
@@ -28,7 +31,8 @@ public class Main {
                         curScope = newScope;
                         counter++;
                     }
-                } catch (Exception e){
+                } catch (src.MyExceptions e){
+                    System.err.println(e.getMessage() + "in line " + i);
                     System.out.println("1");
                     return;
                 }
@@ -49,9 +53,16 @@ public class Main {
         }
 
         for (Method method : curScope.getMethodArr()) {
+            curScope = method;
             for (TypeFactory line :
                     method.getScopeLines()) {
-                line.interpret();
+                try {
+                    String liineddas = line.getCommand();
+                    line.interpret();
+                } catch (MyExceptions myExceptions) {
+                    System.err.println(myExceptions.getMessage() + " in Line " + line.getCommand());
+//                    return;
+                }
             }
         }
         System.out.println("0");

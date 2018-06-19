@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class Method extends ScopeC {
 
+    public static final String UNINITIALIZED_VARIABLE_ERROR = "Uninitialized variable call";
     private ArrayList<Variables> arguments;
     private String name;
 
@@ -17,7 +18,7 @@ public class Method extends ScopeC {
     private ArrayList<Variables> isLegalVar(ArrayList<Variables> varList) throws src.MyExceptions {
         for (Variables variable: varList) {
             if(variable.getData() != null){
-                throw new src.MyExceptions(); // todo exceptions , initialized variable
+                throw new src.MyExceptions(UNINITIALIZED_VARIABLE_ERROR); // todo exceptions , initialized variable
             }
         }
         return varList;
