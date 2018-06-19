@@ -15,3 +15,13 @@ method call = \s*(((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))\s*\(((\s*((([a-z]
 
 Var decleration = \s*((final\s+)?(int|boolean|double|String|char))\s+(((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))\s*(=\s*(\d+.(\d+)?|\"[\w\W]+\"|\'[\w\W]+\'|\s*((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+)))?\s*;?
 method decleration = \s*void\s+(\s*((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+))\s*\(\s*((final\s+)?(int|boolean|double|String|char))\s+(((([a-z]|[A-Z])+)\w*)|(_+([a-z]|[A-Z]|\d)+\s*)\s*)(\s*\)\s*\{)?\s*
+
+
+
+
+
+method dec = ^\s*void\s*\S+\(.*\)\s*{\s*
+method call = ^\s*\S*\s*\(.*\)\s*;\s*
+if while = ^\s*(if|while)\s*\(.+\)\s*{\s*
+var deceleration = ^\s*(final\s*)?\w+\s\S+\s*[^;]+\;\s*
+var assignment = ^\s*.+\s*=\s*.+\s*.*;\s*

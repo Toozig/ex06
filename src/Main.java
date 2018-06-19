@@ -12,11 +12,7 @@ public class Main {
     public static void main(String[] args) throws src.MyExceptions {
         Parser parser = new Parser("Files/Moodle Example/playg");
         List<String> javadoc = parser.getJavaDoc();
-//        String line = "int            a        , double           b         , char c";
-//        ArrayList<Variables> vars = parser.parseVarsFromMethod(line);
-//        for(Variables item:vars){
-//            System.out.println(item.getName()+" "+item.getType()+" "+item.getData()+" "+item.getIsFinal());
-//        }
+        TypeFactory last;
         ScopeC curScope = new ScopeC(null);
         int counter = 0;
         for (int i = 0; i < javadoc.size() ; i++) {
@@ -24,6 +20,7 @@ public class Main {
             String lineType = parser.lineDefining(commandLine);
             TypeFactory line = TypeFactory.valueOf(lineType);
             line.setLine(commandLine, curScope);
+             last  = line;
             if (counter == 0) {
                 try{
                     ScopeC newScope = line.interpret();

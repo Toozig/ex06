@@ -23,7 +23,6 @@ public class ScopeC {
     }
 
     public void addScopeLines(TypeFactory scopeLines) {
-        System.out.println(scopeLines.getCommand());
         this.scopeLines.add(scopeLines);
     }
 
