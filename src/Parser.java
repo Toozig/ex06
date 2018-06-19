@@ -232,9 +232,12 @@ public class Parser {
         methodName = methodName.trim();
         Method method = scope.getMethod(methodName);
         String methodArgumentsString = extractString(line, GET_INSIDE_PERENTLESS_INFO);
-        methodArgumentsString = methodArgumentsString.replace(WHITE_SPACE, EMPTYSTRING);
+        methodArgumentsString = methodArgumentsString.replace(" ", EMPTYSTRING);
         String[] methodArgArr = methodArgumentsString.split(COMMA);
         ArrayList<Variables> methodVar = method.getArguments();
+        if(methodArgArr.length==1 && methodArgArr[0].equals(EMPTYSTRING)){
+            methodArgArr = new String[0];
+        }
         if (methodArgArr.length != methodVar.size()) {
             throw new MyExceptions(INCOMPATIBLE_NUMBER_OF_ARGS_TO_THE_METHOD);  // todo not enough arguemts (or too many)
         }

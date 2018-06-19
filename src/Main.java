@@ -10,7 +10,7 @@ public class Main {
 
 
     public static void main(String[] args) throws src.MyExceptions {
-        Parser parser = new Parser("Files/Moodle Example/503.txt");
+        Parser parser = new Parser("Files/Moodle Example/504.txt");
         List<String> javadoc = parser.getJavaDoc();
 //        String line = "int            a        , double           b         , char c";
 //        ArrayList<Variables> vars = parser.parseVarsFromMethod(line);
