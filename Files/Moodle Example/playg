@@ -4,8 +4,10 @@ int y;
 void goo(){
     y = a;
 }
-
+goo();
 void doo(){
+    goo();
     a = 5;
+
 }
 

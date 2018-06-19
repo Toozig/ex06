@@ -12,6 +12,7 @@ public class Sjavac {
     public static final String SCOPE_CLOSING = "ScopeClosing";
     public static final String RETURN = "return";
     public static final String INVALID_IN_THE_OUTER_SCOPE = "Invalid in the outer scope";
+    public static final String METHOD_CALL = "MethodCall";
 
     public static void main(String[] args) throws MyExceptions {
         Parser parser = new Parser("Files/Moodle Example/playg");
@@ -24,7 +25,7 @@ public class Sjavac {
             String lineType = parser.lineDefining(commandLine);
             Line line = new Line(commandLine, lineType);
             if (counter == 0) {
-                if(lineType.equals(IF_WHILE_BLOCK)||lineType.equals(RETURN)||lineType.equals(SCOPE_CLOSING)){
+                if(isValidGlobalLine(lineType)){
                     System.err.println(INVALID_IN_THE_OUTER_SCOPE+ "in line " + commandLine);
                     System.out.println("1");
                     return;
@@ -69,6 +70,12 @@ public class Sjavac {
             }
         }
         System.out.println("0");
+    }
+
+    // checks if the line being checked is valid for the global scope
+    private static boolean isValidGlobalLine(String lineType) {
+        return lineType.equals(IF_WHILE_BLOCK)||lineType.equals(RETURN)||lineType.equals(SCOPE_CLOSING)
+                || lineType.equals(METHOD_CALL);
     }
 
 }
