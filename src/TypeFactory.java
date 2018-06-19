@@ -32,7 +32,6 @@ public enum TypeFactory {
 
         protected ScopeC interpret() throws src.MyExceptions {
             ScopeC innerScope = parser.ParesIfWhile(command, scopeC);
-            scopeC.addInnerScope(innerScope);
             return innerScope;
 
         }
@@ -86,10 +85,10 @@ public enum TypeFactory {
     abstract protected ScopeC interpret() throws src.MyExceptions;
     protected Parser parser = new Parser();
     protected String command;
-    protected ScopeC  scopeC;
+    protected ScopeC scopeC;
 
     protected void setLine(String line, ScopeC scopeC){
-        command =line;
+        this.command =line;
         this.scopeC = scopeC;
     }
 

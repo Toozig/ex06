@@ -23,6 +23,7 @@ public class ScopeC {
     }
 
     public void addScopeLines(TypeFactory scopeLines) {
+        System.out.println(scopeLines.getCommand());
         this.scopeLines.add(scopeLines);
     }
 
@@ -61,8 +62,12 @@ public class ScopeC {
     }
 
     protected Method getMethod(String methodName) throws src.MyExceptions {
+        ScopeC globalScope = this;
+        while(globalScope.getFather()!=null){
+            globalScope=globalScope.getFather();
+        }
         for (Method method :
-                methodArr) {
+                globalScope.getMethodArr()) {
             if(method.getName().equals(methodName)){
                 return method;
             }

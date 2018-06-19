@@ -192,7 +192,7 @@ public class Parser {
         String[] variableString = varLine[FIRST_VAR_DECLARE].split(EQUALS);
         String[] finalLst = trimStringLst(variableString);
         Object data = null;
-        createVar(finalLst, data, type, isFinal, scope);
+        vars.add(createVar(finalLst, data, type, isFinal, scope));
         for (int i = 1; i < varLine.length; i++) {
             finalLst = trimStringLst(varLine[i].split(EQUALS));
             data = null;
