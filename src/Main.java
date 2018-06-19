@@ -10,7 +10,7 @@ public class Main {
 
 
     public static void main(String[] args) throws src.MyExceptions {
-        Parser parser = new Parser("Files/Moodle Example/playg");
+        Parser parser = new Parser("Files/Moodle Example/503.txt");
         List<String> javadoc = parser.getJavaDoc();
 //        String line = "int            a        , double           b         , char c";
 //        ArrayList<Variables> vars = parser.parseVarsFromMethod(line);
@@ -22,17 +22,16 @@ public class Main {
         for (int i = 0; i < javadoc.size() ; i++) {
             String commandLine = javadoc.get(i);
             String lineType = parser.lineDefining(commandLine);
-            TypeFactory line = TypeFactory.valueOf(lineType);
-            line.setLine(commandLine, curScope);
+            Line line = new Line(commandLine, lineType);
             if (counter == 0) {
                 try{
-                    ScopeC newScope = line.interpret();
+                    ScopeC newScope = line.interperate(curScope);
                     if(!newScope.equals(curScope)){
                         curScope = newScope;
                         counter++;
                     }
                 } catch (src.MyExceptions e){
-                    System.err.println(e.getMessage() + "in line " + i);
+                    System.err.println(e.getMessage() + "in line " + commandLine);
                     System.out.println("1");
                     return;
                 }
@@ -54,14 +53,13 @@ public class Main {
 
         for (Method method : curScope.getMethodArr()) {
             curScope = method;
-            for (TypeFactory line :
-                    method.getScopeLines()) {
+            for (Line line : method.getScopeLines()) {
                 try {
-                    String liineddas = line.getCommand();
-                    line.interpret();
+                    curScope = line.interperate(curScope);
                 } catch (MyExceptions myExceptions) {
-                    System.err.println(myExceptions.getMessage() + " in Line " + line.getCommand());
-//                    return;
+                    System.err.println(myExceptions.getMessage() + " in Line " + line.commandline);
+                    System.out.println("1");
+                    return;
                 }
             }
         }

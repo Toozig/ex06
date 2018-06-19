@@ -4,9 +4,9 @@ final char c = 'b';
 
 void foo() {
 	while(true) {
-		if (boo(1,2,3,"S")) {
-			doo();
-		}
+        if(f){
+
+        }
 	}
 
 	return;
