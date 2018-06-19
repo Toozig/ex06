@@ -58,13 +58,12 @@ public class Parser {
     final static private String METHOD_VARS = "(\\s*((final\\s+)?(int|boolean|double|String|char))" + WHITE_SPACE+
             Names+")\\s*";
     final static private String VariableDeceleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
-    final static private String MethodDeceleration = "\\s*void\\s+(" + Names + ")\\s*\\((" + VariableDeceleration +
-            "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+\\s*)\\s*))?(\\s*\\)\\s*\\{)?\\s*";
+    final static private String MethodDeceleration = "^\\s*void\\s+\\S+\\s*\\(.*\\)\\s\\{\\s*";
+//    final static private String MethodCall = "\\s*(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\" +
+//            "(((\\s*((([a-z]|[A-Z])+)\\w*)\\s*|(_+([a-z]|[A-Z]|\\d)+))(\\)\\s*;)?|(\\s*\\)\\s*;))";
     final static private String MethodCall = "^\\s*\\S*\\s*\\(.*\\)\\s*;\\s*";
-    final static private String VariableAssignment = "\\s*(" + Names + ")\\s*=\\s*(((" + Names + "))" +
-            "|(-?\\d+(.\\d+)?|(\\\"[\\w\\W]+\\\")||\\\'[\\w\\W]+\\\'))\\s*\\;?";
-    final static private String IfWhile = "\\s*(if|while)\\s*((\\(.+\\)\\s*\\{\\s*)|\\(\\s*\\s*" +
-            "(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\(" + INT_OR_DOUBLE_REGEX + ")";
+    final static private String VariableAssignment = "^\\s*\\S+\\s*=\\s*.+\\s*.;\\s";;
+    final static private String IfWhile = "^\\s*(if|while)\\s*\\(.+\\)\\s*\\{\\s*";
     final static private String returnVar = "\\s*return\\s*;\\s*";
     final static private String ScopeClosing = "\\s*}\\s*";
     final static private String Note = "^\\/\\/.*";
@@ -373,10 +372,9 @@ public class Parser {
      * @throws MyExceptions in case the line is illegal
      */
     protected String lineDefining(String fullLine) throws MyExceptions {
-        String lineDeceleration = fullLine.split(COMMA)[0];
         for (String linePattern : pattenToDefDict.keySet()) {
             Pattern pattern = Pattern.compile(linePattern);
-            Matcher matcher = pattern.matcher(lineDeceleration);
+            Matcher matcher = pattern.matcher(fullLine);
             if (matcher.matches()) {
                 String lineDef = pattenToDefDict.get(linePattern);
                 if (lineEnd(fullLine, lineDef)) {

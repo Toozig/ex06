@@ -4,7 +4,7 @@
 //final int b = 3;
 
 void foo(int a, boolean b) {
-	// Hello
+// Hello
 	int c = a;
 	return;
 }

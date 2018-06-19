@@ -8,7 +8,7 @@ public class ScopeC {
     private ArrayList<Variables> varArray;
     private ArrayList<ScopeC> innerScopeArr;
     private ArrayList<Method> methodArr;
-    private ArrayList<TypeFactory> scopeLines;
+    private ArrayList<Line> scopeLines;
 
     public void addToMethodArr(Method method) {
         this.methodArr.add(method);
@@ -22,8 +22,8 @@ public class ScopeC {
         scopeLines = new ArrayList<>();
     }
 
-    public void addScopeLines(TypeFactory scopeLines) {
-        this.scopeLines.add(scopeLines);
+    public void addScopeLines(Line line) {
+        this.scopeLines.add(line);
     }
 
     public ScopeC getFather() {
@@ -38,7 +38,7 @@ public class ScopeC {
         return methodArr;
     }
 
-    public ArrayList<TypeFactory> getScopeLines() {
+    public ArrayList<Line> getScopeLines() {
         return scopeLines;
     }
 
