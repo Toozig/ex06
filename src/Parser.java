@@ -1,4 +1,4 @@
-package oop.ex6;
+import src.MyExceptions;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,7 +41,7 @@ public class Parser {
     final private static String CHAR = "char";
     final private static String STRING = "String";
     final private static String INCOMPATIBLE_TYPE = "incompatibleType";
-    final private static String EmptyLine = "\\s*";
+    final private static String EmptyLine = " *";
     final private static String EMPTY_LINE = "Emptyline";
     final private static String END_STATEMENT = ";";
     final private static String SCOPE_OPENING = "{";
@@ -55,15 +55,14 @@ public class Parser {
     final static private String Names = "\\s*((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+)";
     final static private String EQUALS = "=";
     final static private String EMPTYSTRING = "";
-    final static private String METHOD_VARS = "(\\s*((final\\s+)?(int|boolean|double|String|char))" + WHITE_SPACE +
-            Names + ")\\s*";
+    final static private String METHOD_VARS = "(\\s*((final\\s+)?(int|boolean|double|String|char))" + WHITE_SPACE+
+            Names+")\\s*";
     final static private String VariableDeceleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
     final static private String MethodDeceleration = "^\\s*void\\s+\\S+\\s*\\(.*\\)\\s*\\{\\s*";
 //    final static private String MethodCall = "\\s*(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\" +
-
+//            "(((\\s*((([a-z]|[A-Z])+)\\w*)\\s*|(_+([a-z]|[A-Z]|\\d)+))(\\)\\s*;)?|(\\s*\\)\\s*;))";
     final static private String MethodCall = "^\\s*\\S*\\s*\\(.*\\)\\s*;\\s*";
-    final static private String VariableAssignment = "^\\s*\\S+\\s*=\\s*.+\\s*.*;\\s*";
-    ;
+    final static private String VariableAssignment = "^\\s*\\S+\\s*=\\s*.+\\s*.*;\\s*";;
     final static private String IfWhile = "^\\s*(if|while)\\s*\\(.+\\)\\s*\\{\\s*";
     final static private String returnVar = "\\s*return\\s*;\\s*";
     final static private String ScopeClosing = "\\s*}\\s*";
@@ -81,7 +80,6 @@ public class Parser {
     public static final String TYPEERROR = "Incompatible args type";
     public static final String ASSIGNING_WITH_NON_EXISTING_VARIABLE = "Assigning with non existing variable";
     public static final String TRYING_TO_ASSIGN_NON_EXISTING_VARIABLE = "Trying to assign non existing variable";
-    public static final String NO_EXISTING_VAR_INCOMPATIBLE_TYPE = "No existing var,incompatible type";
     private List<String> javaDoc;
     private static HashMap<String, String> pattenToDefDict;
 
@@ -133,22 +131,17 @@ public class Parser {
                     variable.setData(obj);
                 } catch (NumberFormatException e) {
                     Variables existVar = getExistingVar(scope, varValue, variable.getType());
-                    Method method = (Method) scope;
-                    if (method.isCalled()){
-                        if(existVar.getData() == null){
-                            throw new MyExceptions("ERROR: unInitialized variable");
-                        }
-                        variable.setData(existVar.getData());
+                    variable.setData(existVar.getData());
+                    if (existVar == null){
+                        throw new MyExceptions(ASSIGNING_WITH_NON_EXISTING_VARIABLE);
+                    }
+
                 }
             }
-        }
-            else{
             throw new MyExceptions(TRYING_TO_ASSIGN_NON_EXISTING_VARIABLE);
+
         }
-
     }
-
-}
 
     protected ArrayList<Variables> parseVarsFromMethod(String vars) throws MyExceptions {
         ArrayList<Variables> finalVars = new ArrayList<>();
@@ -175,12 +168,12 @@ public class Parser {
         return finalVars;
     }
 
-    private Variables getExistingVar(ScopeC scope, String varValue, String type) throws MyExceptions {
+    private Variables getExistingVar(ScopeC scope, String varValue, String type) {
         Variables existVar = scope.getVariable(varValue);
         if (existVar != null && existVar.getType().equals(type)) {
             return existVar;
         } else {
-            throw new MyExceptions(NO_EXISTING_VAR_INCOMPATIBLE_TYPE);
+            throw new NumberFormatException();
         }
     }
 
@@ -228,13 +221,13 @@ public class Parser {
             throw new MyExceptions(INCOMPATIBLE_METHOD_NAME); //todo exceptions
         }
         ArrayList<Variables> arguments = new ArrayList<>();
-        if (!methodVars.trim().equals(EMPTYSTRING)) { //todo  vars stuff in genetic
+        if (!methodVars.equals(EMPTYSTRING)) { //todo  vars stuff in genetic
             arguments = parseVarsFromMethod(methodVars);
         }
         return new Method(scope, arguments, methodName);
     }
 
-    protected Method parseMethodCall(ScopeC scope, String line) throws MyExceptions {
+    protected ScopeC parseMethodCall(ScopeC scope, String line) throws MyExceptions {
         String methodName = extractString(line, GET_METHOD_NAME_REGEX);
         methodName = methodName.trim();
         Method method = scope.getMethod(methodName);
@@ -242,13 +235,13 @@ public class Parser {
         methodArgumentsString = methodArgumentsString.replace(" ", EMPTYSTRING);
         String[] methodArgArr = methodArgumentsString.split(COMMA);
         ArrayList<Variables> methodVar = method.getArguments();
-        if (methodArgArr.length == 1 && methodArgArr[0].equals(EMPTYSTRING)) {
+        if(methodArgArr.length==1 && methodArgArr[0].equals(EMPTYSTRING)){
             methodArgArr = new String[0];
         }
         if (methodArgArr.length != methodVar.size()) {
             throw new MyExceptions(INCOMPATIBLE_NUMBER_OF_ARGS_TO_THE_METHOD);
         }
-//        ScopeC tempScope = new Method(scope, new ArrayList<>(), methodName);
+        ScopeC tempScope = new ScopeC(scope);
         for (int i = 0; i < methodArgArr.length; i++) {
             String input = methodArgArr[i];
             Variables varArg = methodVar.get(i);
@@ -256,15 +249,16 @@ public class Parser {
             try {
                 dataAccordingToType(input, argType);
                 varArg.setData(input);
-//                tempScope.addVariable(varArg);
+                tempScope.addVariable(varArg);
             } catch (NumberFormatException e) {
                 Variables var = getExistingVar(scope, input, argType);
                 if (!var.getType().equals(argType)) {
                     throw new MyExceptions(TYPEERROR);
                 }
             }
+            method.runMethod(scope);
         }
-        return method;
+        return tempScope;
     }
 
     // Get a substring of a string by using regex
@@ -454,7 +448,6 @@ public class Parser {
         }
         String[] conditionsArr = conditions.split(LOGICAL_OPERATORS);
         for (String condition : conditionsArr) {
-            condition = condition.trim();
             if (isConditionValid(scope, condition)) break;
         }
         return new ScopeC(scope);
@@ -468,7 +461,7 @@ public class Parser {
             if (var == null) {
                 throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); //todo exception no such variable
             }
-            if (var.getData() == null || !(var.getType().equals(BOOLEAN) || var.getType().equals(DOUBLE) || var.getType().equals(INT))) {
+            if (var.getData() == null || !(var.getType().equals(DOUBLE) || var.getType().equals(INT))) {
                 throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT);
             }
             if (isConditionTextValid(var.getData().toString())) {

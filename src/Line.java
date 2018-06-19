@@ -1,5 +1,3 @@
-package oop.ex6;
-
 public class Line {
     protected TypeFactory typeFactory;
     protected String commandline;
@@ -8,7 +6,7 @@ public class Line {
         typeFactory = TypeFactory.valueOf(commandType);
 
     }
-    protected ScopeC interperate (ScopeC scope) throws MyExceptions {
+    protected ScopeC interperate (ScopeC scope) throws src.MyExceptions {
         return typeFactory.interpret(scope,commandline);
     }
 

@@ -1,5 +1,3 @@
-package oop.ex6;
-
 import jdk.nashorn.internal.runtime.Scope;
 
 import java.util.ArrayList;
@@ -11,7 +9,7 @@ public class Method extends ScopeC {
     private String name;
     private boolean isCalled;
 
-    public Method(ScopeC father, ArrayList<Variables> arguments, String name) throws MyExceptions {
+    public Method(ScopeC father, ArrayList<Variables> arguments, String name) throws src.MyExceptions {
         super(father);
         this.name = name;
         this.isCalled = false;
@@ -27,10 +25,10 @@ public class Method extends ScopeC {
     }
 
     // checks if the method variable ar valid
-    private ArrayList<Variables> isLegalVar(ArrayList<Variables> varList) throws MyExceptions {
+    private ArrayList<Variables> isLegalVar(ArrayList<Variables> varList) throws src.MyExceptions {
         for (Variables variable: varList) {
             if(variable.getData() != null){
-                throw new MyExceptions(UNINITIALIZED_VARIABLE_ERROR); // todo exceptions , initialized variable
+                throw new src.MyExceptions(UNINITIALIZED_VARIABLE_ERROR); // todo exceptions , initialized variable
             }
         }
         return varList;
