@@ -75,7 +75,9 @@ public class ScopeC {
         throw new src.MyExceptions(INVALID_LINE);
     }
 
-
+    public void setFather(ScopeC father) {
+        this.father = father;
+    }
 
     protected void addVariable(Variables var){
         varArray.add(var);

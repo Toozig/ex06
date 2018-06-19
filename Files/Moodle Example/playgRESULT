@@ -21,7 +21,8 @@ void doo() { ---> MethodDeclare
 	return; ---> Return
 } ---> ScopeClosing
  ---> Emptyline
-void goo(int h, int i) { ---> MethodDeclare
+void goo(int h, int i) { ---> lineError
 	int j = a; ---> Variable
 	return; ---> Return
 } ---> ScopeClosing
+ng

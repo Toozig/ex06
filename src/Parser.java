@@ -58,11 +58,11 @@ public class Parser {
     final static private String METHOD_VARS = "(\\s*((final\\s+)?(int|boolean|double|String|char))" + WHITE_SPACE+
             Names+")\\s*";
     final static private String VariableDeceleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
-    final static private String MethodDeceleration = "^\\s*void\\s+\\S+\\s*\\(.*\\)\\s\\{\\s*";
+    final static private String MethodDeceleration = "^\\s*void\\s+\\S+\\s*\\(.*\\)\\s*\\{\\s*";
 //    final static private String MethodCall = "\\s*(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\" +
 //            "(((\\s*((([a-z]|[A-Z])+)\\w*)\\s*|(_+([a-z]|[A-Z]|\\d)+))(\\)\\s*;)?|(\\s*\\)\\s*;))";
     final static private String MethodCall = "^\\s*\\S*\\s*\\(.*\\)\\s*;\\s*";
-    final static private String VariableAssignment = "^\\s*\\S+\\s*=\\s*.+\\s*.;\\s";;
+    final static private String VariableAssignment = "^\\s*\\S+\\s*=\\s*.+\\s*.*;\\s*";;
     final static private String IfWhile = "^\\s*(if|while)\\s*\\(.+\\)\\s*\\{\\s*";
     final static private String returnVar = "\\s*return\\s*;\\s*";
     final static private String ScopeClosing = "\\s*}\\s*";
@@ -239,22 +239,26 @@ public class Parser {
             methodArgArr = new String[0];
         }
         if (methodArgArr.length != methodVar.size()) {
-            throw new MyExceptions(INCOMPATIBLE_NUMBER_OF_ARGS_TO_THE_METHOD);  // todo not enough arguemts (or too many)
+            throw new MyExceptions(INCOMPATIBLE_NUMBER_OF_ARGS_TO_THE_METHOD);
         }
+        ScopeC tempScope = new ScopeC(scope);
         for (int i = 0; i < methodArgArr.length; i++) {
             String input = methodArgArr[i];
             Variables varArg = methodVar.get(i);
             String argType = varArg.getType();
             try {
                 dataAccordingToType(input, argType);
+                varArg.setData(input);
+                tempScope.addVariable(varArg);
             } catch (NumberFormatException e) {
                 Variables var = getExistingVar(scope, input, argType);
                 if (!var.getType().equals(argType)) {
-                    throw new MyExceptions(TYPEERROR); // todo arg type does not much
+                    throw new MyExceptions(TYPEERROR);
                 }
             }
+            method.runMethod(scope);
         }
-        return scope;
+        return tempScope;
     }
 
     // Get a substring of a string by using regex

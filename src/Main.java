@@ -10,7 +10,7 @@ public class Main {
 
 
     public static void main(String[] args) throws src.MyExceptions {
-        Parser parser = new Parser("Files/Moodle Example/504.txt");
+        Parser parser = new Parser("Files/Moodle Example/playg");
         List<String> javadoc = parser.getJavaDoc();
 //        String line = "int            a        , double           b         , char c";
 //        ArrayList<Variables> vars = parser.parseVarsFromMethod(line);
@@ -24,6 +24,7 @@ public class Main {
             String lineType = parser.lineDefining(commandLine);
             Line line = new Line(commandLine, lineType);
             if (counter == 0) {
+                System.out.println(commandLine);
                 try{
                     ScopeC newScope = line.interperate(curScope);
                     if(!newScope.equals(curScope)){

@@ -28,8 +28,7 @@ public enum TypeFactory {
     },
     IfWhileBlock{
         protected ScopeC interpret(ScopeC scopeC, String command) throws src.MyExceptions {
-            ScopeC innerScope = parser.ParesIfWhile(command, scopeC);
-            return innerScope;
+            return parser.ParesIfWhile(command, scopeC);
 
         }
 
@@ -37,6 +36,7 @@ public enum TypeFactory {
     MethodCall{
         protected ScopeC interpret(ScopeC scopeC, String command) throws src.MyExceptions {
             return parser.parseMethodCall(scopeC, command);
+
         }
 
     },

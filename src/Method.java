@@ -35,4 +35,11 @@ public class Method extends ScopeC {
     public String getName() {
         return name;
     }
+
+    protected void runMethod(ScopeC scopeC) throws src.MyExceptions {
+        this.setFather(scopeC);
+        for(Line line: this.getScopeLines()){
+            line.interperate(this);
+        }
+    }
 }
