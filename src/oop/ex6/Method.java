@@ -50,7 +50,9 @@ public class Method extends ScopeC {
 
     protected void runMethod(ScopeC scopeC) throws MyExceptions {
         ScopeC father = this.getFather();
-        this.setFather(scopeC);
+        if(scopeC != this) {
+            this.setFather(scopeC);
+        }
         isCalled = true;
         for(Line line: this.getScopeLines()){
             line.interperate(this);

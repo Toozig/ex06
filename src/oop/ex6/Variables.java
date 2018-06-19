@@ -33,6 +33,7 @@ public class Variables<T> {
     }
 
     public void setData(T data) {
+
         this.data = data;
     }
 }

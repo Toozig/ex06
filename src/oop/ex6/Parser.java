@@ -135,6 +135,9 @@ public class Parser {
                     Variables existVar = getExistingVar(scope, varValue, variable.getType());
                     Method method = (Method) scope;
                     if (method.isCalled()){
+                        if(existVar.getData() == null){
+                            throw new MyExceptions("ERROR: unInitialized variable");
+                        }
                         variable.setData(existVar.getData());
                 }
             }
