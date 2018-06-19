@@ -6,8 +6,8 @@ void goo(){
 }
 goo();
 void doo(){
-    goo();
     a = 5;
+    goo();
 
 }
 

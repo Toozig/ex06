@@ -6,7 +6,7 @@ import java.util.LinkedList;
 public enum TypeFactory {
     Variable{
         protected ScopeC interpret(ScopeC scopeC, String command) throws MyExceptions {
-            ArrayList<Variables> varArr = parser.parseVar(command,scopeC);
+            ArrayList<Variables<Object>> varArr = parser.parseVar(command,scopeC);
             for (Variables var: varArr) {
                 scopeC.addVariable(var);
             }
