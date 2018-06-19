@@ -14,7 +14,7 @@ public class Sjavac {
     public static final String INVALID_IN_THE_OUTER_SCOPE = "Invalid in the outer scope";
 
     public static void main(String[] args) throws MyExceptions {
-        Parser parser = new Parser(args[0]);
+        Parser parser = new Parser("Files/Moodle Example/playg");
         List<String> javadoc = parser.getJavaDoc();
 
         ScopeC curScope = new ScopeC(null);

@@ -1,16 +1,17 @@
 int a;
+
+
+int y;
+void goo(){
+    y = a;
+}
 void foo(){
     a = 5;
 }
 
-int y;
-void goo(){
-    foo();
-    y = a;
-}
 
 void koo(){
-    goo();
+   foo();
     String jamila = "arbel hamehamemet";
 
 }

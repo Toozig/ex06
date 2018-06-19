@@ -38,7 +38,10 @@ public enum TypeFactory {
     },
     MethodCall{
         protected ScopeC interpret(ScopeC scopeC, String command) throws MyExceptions {
-            return parser.parseMethodCall(scopeC, command);
+
+            Method calledMethod = parser.parseMethodCall(scopeC, command);
+            calledMethod.runMethod(scopeC);
+            return scopeC;
         }
 
     },

@@ -9,11 +9,21 @@ public class Method extends ScopeC {
     public static final String UNINITIALIZED_VARIABLE_ERROR = "Uninitialized variable call";
     private ArrayList<Variables> arguments;
     private String name;
+    private boolean isCalled;
 
     public Method(ScopeC father, ArrayList<Variables> arguments, String name) throws MyExceptions {
         super(father);
         this.name = name;
+        this.isCalled = false;
         this. arguments = isLegalVar(arguments);
+    }
+
+    public boolean isCalled() {
+        return isCalled;
+    }
+
+    public void setCalled(boolean called) {
+        isCalled = called;
     }
 
     // checks if the method variable ar valid
@@ -38,10 +48,15 @@ public class Method extends ScopeC {
         return name;
     }
 
-    protected void runMethod(ScopeC scopeC) throws src.MyExceptions {
+    protected void runMethod(ScopeC scopeC) throws MyExceptions {
+        ScopeC father = this.getFather();
         this.setFather(scopeC);
+        isCalled = true;
         for(Line line: this.getScopeLines()){
             line.interperate(this);
         }
+        this.setFather(father);
+        isCalled = false;
+
     }
 }

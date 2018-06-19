@@ -44,6 +44,10 @@ public class ScopeC {
         return scopeLines;
     }
 
+    public void setScopeLines(ArrayList<Line> scopeLines) {
+        this.scopeLines = scopeLines;
+    }
+
     public Variables getVariable(String variable){
         for (Variables var: varArray) {
             if(var.getName().equals(variable)){

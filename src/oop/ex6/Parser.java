@@ -60,12 +60,9 @@ public class Parser {
     final static private String VariableDeceleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
     final static private String MethodDeceleration = "^\\s*void\\s+\\S+\\s*\\(.*\\)\\s*\\{\\s*";
 //    final static private String MethodCall = "\\s*(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\" +
-    final static private String MethodDeceleration = "^\\s*void\\s+\\S+\\s*\\(.*\\)\\s\\{\\s*";
-    //    final static private String MethodCall = "\\s*(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))\\s*\\" +
-//            "(((\\s*((([a-z]|[A-Z])+)\\w*)\\s*|(_+([a-z]|[A-Z]|\\d)+))(\\)\\s*;)?|(\\s*\\)\\s*;))";
+
     final static private String MethodCall = "^\\s*\\S*\\s*\\(.*\\)\\s*;\\s*";
-    final static private String VariableAssignment = "^\\s*\\S+\\s*=\\s*.+\\s*.*;\\s*";;
-    final static private String VariableAssignment = "^\\s*\\S+\\s*=\\s*.+\\s*.;\\s";
+    final static private String VariableAssignment = "^\\s*\\S+\\s*=\\s*.+\\s*.*;\\s*";
     ;
     final static private String IfWhile = "^\\s*(if|while)\\s*\\(.+\\)\\s*\\{\\s*";
     final static private String returnVar = "\\s*return\\s*;\\s*";
@@ -136,17 +133,19 @@ public class Parser {
                     variable.setData(obj);
                 } catch (NumberFormatException e) {
                     Variables existVar = getExistingVar(scope, varValue, variable.getType());
-                    variable.setData(existVar.getData());
-                    if (existVar == null) {
-                        throw new MyExceptions(ASSIGNING_WITH_NON_EXISTING_VARIABLE);
-                    }
-
+                    Method method = (Method) scope;
+                    if (method.isCalled()){
+                        variable.setData(existVar.getData());
                 }
             }
-            throw new MyExceptions(TRYING_TO_ASSIGN_NON_EXISTING_VARIABLE);
-
         }
+            else{
+            throw new MyExceptions(TRYING_TO_ASSIGN_NON_EXISTING_VARIABLE);
+        }
+
     }
+
+}
 
     protected ArrayList<Variables> parseVarsFromMethod(String vars) throws MyExceptions {
         ArrayList<Variables> finalVars = new ArrayList<>();
@@ -232,7 +231,7 @@ public class Parser {
         return new Method(scope, arguments, methodName);
     }
 
-    protected ScopeC parseMethodCall(ScopeC scope, String line) throws MyExceptions {
+    protected Method parseMethodCall(ScopeC scope, String line) throws MyExceptions {
         String methodName = extractString(line, GET_METHOD_NAME_REGEX);
         methodName = methodName.trim();
         Method method = scope.getMethod(methodName);
@@ -246,7 +245,7 @@ public class Parser {
         if (methodArgArr.length != methodVar.size()) {
             throw new MyExceptions(INCOMPATIBLE_NUMBER_OF_ARGS_TO_THE_METHOD);
         }
-        ScopeC tempScope = new ScopeC(scope);
+//        ScopeC tempScope = new Method(scope, new ArrayList<>(), methodName);
         for (int i = 0; i < methodArgArr.length; i++) {
             String input = methodArgArr[i];
             Variables varArg = methodVar.get(i);
@@ -254,16 +253,15 @@ public class Parser {
             try {
                 dataAccordingToType(input, argType);
                 varArg.setData(input);
-                tempScope.addVariable(varArg);
+//                tempScope.addVariable(varArg);
             } catch (NumberFormatException e) {
                 Variables var = getExistingVar(scope, input, argType);
                 if (!var.getType().equals(argType)) {
                     throw new MyExceptions(TYPEERROR);
                 }
             }
-            method.runMethod(scope);
         }
-        return tempScope;
+        return method;
     }
 
     // Get a substring of a string by using regex
