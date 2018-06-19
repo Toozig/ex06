@@ -228,7 +228,7 @@ public class Parser {
             throw new MyExceptions(INCOMPATIBLE_METHOD_NAME); //todo exceptions
         }
         ArrayList<Variables> arguments = new ArrayList<>();
-        if (!methodVars.equals(EMPTYSTRING)) { //todo  vars stuff in genetic
+        if (!methodVars.trim().equals(EMPTYSTRING)) { //todo  vars stuff in genetic
             arguments = parseVarsFromMethod(methodVars);
         }
         return new Method(scope, arguments, methodName);
