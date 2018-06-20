@@ -94,5 +94,13 @@ public class ScopeC {
         innerScopeArr.add(innerScopeC);
     }
 
+    // Gets the method in which a scope is inside of
+    protected Method getScopesMethod(){
+        if(father.getFather() == null){
+            return (Method) this;
+        }
+        return father.getScopesMethod();
+    }
+
 
 }

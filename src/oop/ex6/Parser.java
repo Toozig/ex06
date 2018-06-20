@@ -463,7 +463,7 @@ public class Parser {
     // checks if a condition in if\while block is a valid condition.
     private boolean isConditionValid(ScopeC scopeC, String condition) throws MyExceptions {
         condition = condition.trim();
-        Method method = (Method) scopeC;
+        Method method = scopeC.getScopesMethod();
         if (!(isConditionTextValid(condition))) {
             Variables var = method.getVariable(condition); // condition might be variable
             if (var == null) {
@@ -491,7 +491,6 @@ public class Parser {
                 var.getType().equals(DOUBLE) || var.getType().equals(INT);
         boolean isInitialized = var.getData()!=null;
         boolean isVarArg = vars.contains(var);
-
         return ( !(type && (isInitialized || (!isCalled)&&isVarArg )));
     }
 

@@ -22,6 +22,8 @@ public class Method extends ScopeC {
         return isCalled;
     }
 
+
+
     public void setCalled(boolean called) {
         isCalled = called;
     }
