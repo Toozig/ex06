@@ -84,6 +84,7 @@ public class Parser {
     public static final String TRYING_TO_ASSIGN_NON_EXISTING_VARIABLE = "Trying to assign non existing variable";
     public static final String NO_EXISTING_VAR_INCOMPATIBLE_TYPE = "No existing var,incompatible type";
     public static final String EXISTING_VAR = "Existing var with the same name";
+    public static final String ERROR_UN_INITIALIZED_VARIABLE = "ERROR: unInitialized variable";
     private List<String> javaDoc;
     private static HashMap<String, String> pattenToDefDict;
 
@@ -132,15 +133,15 @@ public class Parser {
             if (variable != null && (!(variable.getIsFinal()))) {
                 try {
                     Object obj = dataAccordingToType(varValue, variable.getType());
-                    variable.setData(obj);
+                    variable.setInitialized(true);
                 } catch (NumberFormatException e) {
                     Variables existVar = getExistingVar(scope, varValue, variable.getType());
                     Method method = (Method) scope;
                     if (method.isCalled()) {
-                        if (existVar.getData() == null) {
-                            throw new MyExceptions("ERROR: unInitialized variable");
+                        if (!existVar.isInitialized()) {
+                            throw new MyExceptions(ERROR_UN_INITIALIZED_VARIABLE);
                         }
-                        variable.setData(existVar.getData());
+                        variable.setInitialized(true);
                     }
                 }
             } else {
@@ -171,7 +172,7 @@ public class Parser {
                     }
 
                 }
-                variable = new Variables(var[1], var[0], null, false);
+                variable = new Variables(var[1], var[0], false, false);
                 finalVars.add(variable);
             } else {
                 throw new MyExceptions(INCOMPATIBLE_VAR_DECELERATION);
@@ -203,12 +204,12 @@ public class Parser {
         varLine[FIRST_VAR_DECLARE] = varLine[FIRST_VAR_DECLARE].replace(type, EMPTYSTRING).trim();
         String[] variableString = varLine[FIRST_VAR_DECLARE].split(EQUALS);
         String[] finalLst = trimStringLst(variableString);
-        Object data = null;
-        vars.add(createVar(finalLst, data, type, isFinal, scope));
+        boolean isInitialized= false;
+        vars.add(createVar(finalLst, isInitialized, type, isFinal, scope));
         for (int i = 1; i < varLine.length; i++) {
             finalLst = trimStringLst(varLine[i].split(EQUALS));
-            data = null;
-            vars.add(createVar(finalLst, data, type, isFinal, scope));
+            isInitialized = false;
+            vars.add(createVar(finalLst, isInitialized, type, isFinal, scope));
 
 
         }
@@ -263,11 +264,11 @@ public class Parser {
             String argType = varArg.getType();
             try {
                 dataAccordingToType(input, argType);
-                varArg.setData(input);
+                varArg.setInitialized(true);
 //                tempScope.addVariable(varArg);
             } catch (NumberFormatException e) {
                 Variables var = getExistingVar(scope, input, argType);
-                if (!var.getType().equals(argType) || var.getData() == null) {
+                if (!var.getType().equals(argType) || !var.isInitialized()) {
                     throw new MyExceptions(TYPEERROR);
                 }
             }
@@ -292,15 +293,14 @@ public class Parser {
     }
 
 
-    private Variables createVar(String[] line, Object data, String type, Boolean isFinal, ScopeC scope) throws NumberFormatException, MyExceptions {
+    private Variables createVar(String[] line, boolean isInitialized, String type, Boolean isFinal, ScopeC scope) throws NumberFormatException, MyExceptions {
         String name = line[0];
         switch (line.length) {
             case 2:
-                try {
-                    data = dataAccordingToType(line[1], type);
-                } catch (NumberFormatException e) {
-                    data = CheckIfExistVar(line[1], type, scope);
-                    if (data == null) {
+                isInitialized = isTypeMatch(line[1], type);
+                if(!isInitialized){
+                    isInitialized = CheckIfExistVar(line[1],type,scope);
+                    if (!isInitialized) {
                         throw new MyExceptions(ASSIGNING_WITH_NON_EXISTING_VARIABLE);
                     }
                 }
@@ -313,10 +313,10 @@ public class Parser {
         if (isThereAnotherVarIdentical(name, scope)) {
             throw new MyExceptions(EXIST_VAR);
         }
-        if (isFinal && data == null) {
+        if (isFinal && !isInitialized) {
             throw new MyExceptions(Final_Var_No_INITIALIZION);
         }
-        Variables var = new Variables(name, type, data, isFinal);
+        Variables var = new Variables(name, type, isInitialized, isFinal);
         return var;
     }
 
@@ -381,14 +381,14 @@ public class Parser {
         throw new NumberFormatException();
     }
 
-    private String CheckIfExistVar(String varData, String type, ScopeC scope) {
+    private boolean CheckIfExistVar(String varData, String type, ScopeC scope) {
         Variables existVar = scope.getVariable(varData);
         if (existVar != null) {
             if (existVar.getType().equals(type)) {
-                return String.valueOf(existVar.getData());
+                return existVar.isInitialized();
             }
         }
-        return null;
+        return false;
     }
 
     /**
@@ -501,7 +501,7 @@ public class Parser {
         ArrayList<Variables> vars = method.getArguments();
         boolean type = var.getType().equals(BOOLEAN) || //todo this sucks, need to fix the is called
                 var.getType().equals(DOUBLE) || var.getType().equals(INT);
-        boolean isInitialized = var.getData() != null;
+        boolean isInitialized = var.isInitialized();
         boolean isVarArg = vars.contains(var);
         return (!(type && (isInitialized || (!isCalled) && isVarArg)));
     }
