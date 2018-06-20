@@ -135,21 +135,20 @@ public class Parser {
                 } catch (NumberFormatException e) {
                     Variables existVar = getExistingVar(scope, varValue, variable.getType());
                     Method method = (Method) scope;
-                    if (method.isCalled()){
-                        if(existVar.getData() == null){
+                    if (method.isCalled()) {
+                        if (existVar.getData() == null) {
                             throw new MyExceptions("ERROR: unInitialized variable");
                         }
                         variable.setData(existVar.getData());
+                    }
                 }
+            } else {
+                throw new MyExceptions(TRYING_TO_ASSIGN_NON_EXISTING_VARIABLE);
             }
-        }
-            else{
-            throw new MyExceptions(TRYING_TO_ASSIGN_NON_EXISTING_VARIABLE);
+
         }
 
     }
-
-}
 
     protected ArrayList<Variables> parseVarsFromMethod(String vars) throws MyExceptions {
         ArrayList<Variables> finalVars = new ArrayList<>();
@@ -165,8 +164,8 @@ public class Parser {
                 throw new MyExceptions(INCOMPATIBLE_VAR_DECELERATION);
             }
             if (matcher.matches()) {
-                for(Variables methodVar : finalVars){
-                    if(var[1].equals(methodVar.getName())){
+                for (Variables methodVar : finalVars) {
+                    if (var[1].equals(methodVar.getName())) {
                         throw new MyExceptions(EXISTING_VAR);
                     }
 
@@ -231,7 +230,7 @@ public class Parser {
         matcher = pattern.matcher(line);
         matcher.find();
         String methodName = matcher.group(1);
-        if (!isNameValid(methodName)) {
+        if (!isNameValid(methodName) || scope.getFather() != null) {
             throw new MyExceptions(INCOMPATIBLE_METHOD_NAME); //todo exceptions
         }
         ArrayList<Variables> arguments = new ArrayList<>();
@@ -240,7 +239,6 @@ public class Parser {
         }
         return new Method(scope, arguments, methodName);
     }
-
 
 
     protected Method parseMethodCall(ScopeC scope, String line) throws MyExceptions {
@@ -268,7 +266,7 @@ public class Parser {
 //                tempScope.addVariable(varArg);
             } catch (NumberFormatException e) {
                 Variables var = getExistingVar(scope, input, argType);
-                if (!var.getType().equals(argType)) {
+                if (!var.getType().equals(argType) || var.getData() == null) {
                     throw new MyExceptions(TYPEERROR);
                 }
             }
@@ -362,11 +360,17 @@ public class Parser {
             case BOOLEAN:
                 return Boolean.parseBoolean(data);
             case CHAR:
-            case STRING:
-                if (data.startsWith("\"") && data.endsWith("\"") || data.startsWith("\'") && data.endsWith("\'")) {
+                if (data.startsWith("\'") && data.endsWith("\'")) {
                     if (type.equals(CHAR) && data.length() > 3) {
                         throw new NumberFormatException();
                     }
+                    return data.replace("\"", EMPTYSTRING);
+                } else {
+                    throw new NumberFormatException();
+
+                }
+            case STRING:
+                if (data.startsWith("\"") && data.endsWith("\"")) {
                     return data.replace("\"", EMPTYSTRING);
                 } else {
                     throw new NumberFormatException();
@@ -479,7 +483,7 @@ public class Parser {
                 throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); //todo exception no such variable
             }
 
-            if (isaBooleanArgValid(var, method.isCalled(),method )) {
+            if (isaBooleanArgValid(var, method.isCalled(), method)) {
                 throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT);
             }
             if (!method.isCalled() || isConditionTextValid(var.getData().toString())) {
@@ -491,16 +495,14 @@ public class Parser {
     }
 
 
-
-
     // checks if a given variable is a valid boolean argument
-    private boolean isaBooleanArgValid(Variables var, boolean isCalled,Method method) {
+    private boolean isaBooleanArgValid(Variables var, boolean isCalled, Method method) {
         ArrayList<Variables> vars = method.getArguments();
         boolean type = var.getType().equals(BOOLEAN) || //todo this sucks, need to fix the is called
                 var.getType().equals(DOUBLE) || var.getType().equals(INT);
-        boolean isInitialized = var.getData()!=null;
+        boolean isInitialized = var.getData() != null;
         boolean isVarArg = vars.contains(var);
-        return ( !(type && (isInitialized || (!isCalled)&&isVarArg )));
+        return (!(type && (isInitialized || (!isCalled) && isVarArg)));
     }
 
 
