@@ -479,6 +479,7 @@ public class Parser {
         return false;
     }
 
+
     // checks if a string of condition is a valid argument.
     private boolean isConditionTextValid(String string) {
         Pattern pattern;
