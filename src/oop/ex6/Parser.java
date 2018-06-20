@@ -82,6 +82,7 @@ public class Parser {
     public static final String ASSIGNING_WITH_NON_EXISTING_VARIABLE = "Assigning with non existing variable";
     public static final String TRYING_TO_ASSIGN_NON_EXISTING_VARIABLE = "Trying to assign non existing variable";
     public static final String NO_EXISTING_VAR_INCOMPATIBLE_TYPE = "No existing var,incompatible type";
+    public static final String EXISTING_VAR = "Existing var with the same name";
     private List<String> javaDoc;
     private static HashMap<String, String> pattenToDefDict;
 
@@ -164,6 +165,12 @@ public class Parser {
                 throw new MyExceptions(INCOMPATIBLE_VAR_DECELERATION);
             }
             if (matcher.matches()) {
+                for(Variables methodVar : finalVars){
+                    if(var[1].equals(methodVar.getName())){
+                        throw new MyExceptions(EXISTING_VAR);
+                    }
+
+                }
                 variable = new Variables(var[1], var[0], null, false);
                 finalVars.add(variable);
             } else {
@@ -450,7 +457,7 @@ public class Parser {
         Pattern pattern = Pattern.compile(CONDITION_PATTEREN);
         Matcher matcher = pattern.matcher(conditions);
         if (matcher.find()) {
-            throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); // todo expectations
+            throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); // todo exceptions
         }
         String[] conditionsArr = conditions.split(LOGICAL_OPERATORS);
         for (String condition : conditionsArr) {
