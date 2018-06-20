@@ -217,7 +217,7 @@ public class Parser {
      * -
      */
     protected Method parseMethodDeceleration(String line, ScopeC scope) throws MyExceptions {
-        String methodVars = extractString(line, GET_INSIDE_PERENTLESS_INFO);
+        String methodVars = extractString(line, GET_INSIDE_PERENTLESS_INFO).trim();
         Pattern pattern;
         Matcher matcher;
         pattern = Pattern.compile(METHOD_NAME);
@@ -233,6 +233,8 @@ public class Parser {
         }
         return new Method(scope, arguments, methodName);
     }
+
+
 
     protected Method parseMethodCall(ScopeC scope, String line) throws MyExceptions {
         String methodName = extractString(line, GET_METHOD_NAME_REGEX);
