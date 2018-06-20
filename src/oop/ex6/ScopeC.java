@@ -22,6 +22,7 @@ public class ScopeC {
         this.innerScopeArr = new ArrayList<>();
         this.methodArr = new ArrayList<>();
         scopeLines = new ArrayList<>();
+
     }
 
     public void addScopeLines(Line line) {

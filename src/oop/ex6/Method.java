@@ -10,19 +10,27 @@ public class Method extends ScopeC {
     private ArrayList<Variables> arguments;
     private String name;
     private boolean isCalled;
+    private boolean gotReturn;
 
     public Method(ScopeC father, ArrayList<Variables> arguments, String name) throws MyExceptions {
         super(father);
         this.name = name;
         this.isCalled = false;
         this. arguments = isLegalVar(arguments);
+        this.gotReturn = false;
     }
 
     public boolean isCalled() {
         return isCalled;
     }
 
+    public boolean GotReturn() {
+        return gotReturn;
+    }
 
+    public void setGotReturn(boolean gotReturn) {
+        this.gotReturn = gotReturn;
+    }
 
     public void setCalled(boolean called) {
         isCalled = called;
