@@ -107,9 +107,14 @@ public class Sjavac {
             String commandLine = javadoc.get(i);
             String lineType = parser.lineDefining(commandLine);
             Line methodLine = new Line(commandLine, lineType);
+            if(MethodNotFinished(method, lineType)){
+                method.setGotReturn(false);
+            }
             switch (lineType) {
                 case RETURN:
-                    method.setGotReturn(true);
+                    if(scopeOpen == 1) {
+                        method.setGotReturn(true);
+                    }
                     break;
                 case IF_WHILE_BLOCK:
                     scopeOpen++;
@@ -120,6 +125,7 @@ public class Sjavac {
                 case METHOD_DECLARE:
                     throw new MyExceptions(METHOD_INSIDE_A_METHOD);
             }
+
             method.addScopeLines(methodLine);
             if (scopeOpen == 0) {
                 if (!method.GotReturn()) {
@@ -127,9 +133,12 @@ public class Sjavac {
                 }
                 return method;
             }
-
         }
         throw new MyExceptions(NOT_ENOUGH_CLOSING_BRACKETS);
+    }
+
+    private static boolean MethodNotFinished(Method method, String lineType) {
+        return method.GotReturn() && (!lineType.equals(RETURN) && !lineType.equals("Note") && !lineType.equals(SCOPE_CLOSING) );
     }
 
 }

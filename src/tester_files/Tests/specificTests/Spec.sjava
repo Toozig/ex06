@@ -1,6 +1,2 @@
-void foo() {
-	if (true) {
-	}
-
-	return;
-}
+String a = "true";
+boolean b = a;

@@ -68,8 +68,9 @@ public class Parser {
     final static private String returnVar = "\\s*return\\s*;\\s*";
     final static private String ScopeClosing = "\\s*}\\s*";
     final static private String Note = "^\\/\\/.*";
-    final static private String VariableCreation = VariableDeceleration + "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))" +
-            "\\s*(=\\s*(" + INT_OR_DOUBLE_REGEX + "|\\\"[\\w\\W]+\\\"|\\\'[\\w\\W]+\\\'|" + Names + "))?\\s*;?";
+    final static private String VariableCreation =  "^\\s*(final)?\\s*(final\\s+)?(int|boolean|double|String|char)\\s+([^\\s+]+\\s*)+;";
+//    final static private String VariableCreation = VariableDeceleration + "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))" +
+//            "\\s*(=\\s*(" + INT_OR_DOUBLE_REGEX + "|\\\"[\\w\\W]+\\\"|\\\'[\\w\\W]+\\\'|" + Names + "))?\\s*;?";
     public static final String INVALID_BOOLEAN_ARGUMENT = "Invalid boolean argument";
     public static final String INVALID_FILE = "Invalid sJava file";
     public static final String INVALID_LINE = "Invalid line format";
