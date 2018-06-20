@@ -461,22 +461,33 @@ public class Parser {
     }
 
     // checks if a condition in if\while block is a valid condition.
-    private boolean isConditionValid(ScopeC scope, String condition) throws MyExceptions {
+    private boolean isConditionValid(ScopeC scopeC, String condition) throws MyExceptions {
         condition = condition.trim();
+        Method method = (Method) scopeC;
         if (!(isConditionTextValid(condition))) {
-            Variables var = scope.getVariable(condition); // condition might be variable
+            Variables var = method.getVariable(condition); // condition might be variable
             if (var == null) {
                 throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); //todo exception no such variable
             }
-            if (var.getData() == null || !(var.getType().equals(BOOLEAN) || var.getType().equals(DOUBLE) || var.getType().equals(INT))) {
+
+            if (isaBooleanArgValid(var, method.isCalled() )) {
                 throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT);
             }
-            if (isConditionTextValid(var.getData().toString())) {
+            if (!method.isCalled() || isConditionTextValid(var.getData().toString())) {
                 return true;
             }
             throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); //todo variable is not a double/int/ initialized
         }
         return false;
+    }
+
+
+
+
+    // checks if a given variable is a valid boolean argument
+    private boolean isaBooleanArgValid(Variables var, boolean isCalled) {
+        return ( (!(var.getType().equals(BOOLEAN) || //todo this sucks, need to fix the is called
+                var.getType().equals(DOUBLE) || var.getType().equals(INT)) && (var.getData() != null || !isCalled) ));
     }
 
 
