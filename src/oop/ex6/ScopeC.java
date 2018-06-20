@@ -94,8 +94,8 @@ public class ScopeC {
         innerScopeArr.add(innerScopeC);
     }
 
-    // Gets the method in which a scope is inside of
-    protected Method getScopesMethod(){
+    // Gets the method in which a inner scope is indise s
+     Method getScopesMethod(){
         if(father.getFather() == null){
             return (Method) this;
         }

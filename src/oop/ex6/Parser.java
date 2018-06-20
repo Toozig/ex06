@@ -465,7 +465,7 @@ public class Parser {
         condition = condition.trim();
         Method method = scopeC.getScopesMethod();
         if (!(isConditionTextValid(condition))) {
-            Variables var = method.getVariable(condition); // condition might be variable
+            Variables var = scopeC.getVariable(condition); // condition might be variable
             if (var == null) {
                 throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); //todo exception no such variable
             }
