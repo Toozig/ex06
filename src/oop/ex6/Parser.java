@@ -470,7 +470,7 @@ public class Parser {
                 throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); //todo exception no such variable
             }
 
-            if (isaBooleanArgValid(var, method.isCalled() )) {
+            if (isaBooleanArgValid(var, method.isCalled(),method )) {
                 throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT);
             }
             if (!method.isCalled() || isConditionTextValid(var.getData().toString())) {
@@ -485,9 +485,14 @@ public class Parser {
 
 
     // checks if a given variable is a valid boolean argument
-    private boolean isaBooleanArgValid(Variables var, boolean isCalled) {
-        return ( (!(var.getType().equals(BOOLEAN) || //todo this sucks, need to fix the is called
-                var.getType().equals(DOUBLE) || var.getType().equals(INT)) && (var.getData() != null || !isCalled) ));
+    private boolean isaBooleanArgValid(Variables var, boolean isCalled,Method method) {
+        ArrayList<Variables> vars = method.getArguments();
+        boolean type = var.getType().equals(BOOLEAN) || //todo this sucks, need to fix the is called
+                var.getType().equals(DOUBLE) || var.getType().equals(INT);
+        boolean isInitialized = var.getData()!=null;
+        boolean isVarArg = vars.contains(var);
+
+        return ( !(type && (isInitialized || (!isCalled)&&isVarArg )));
     }
 
 
