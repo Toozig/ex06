@@ -1,28 +1,14 @@
-// A very complex test ---> Note
-//I am just a comment ---> Note
-//int a = 5; ---> Note
-//final int b = 3; ---> Note
+int a; ---> Variable
+int y; ---> Variable
  ---> Emptyline
-void foo(int a, boolean b) { ---> MethodDeclare
-	// Hello ---> lineError
-	int c = a; ---> Variable
-	return; ---> Return
+void goo(int b){ ---> MethodDeclare
+    y = a; ---> VariableAssignment
+    if(b){ ---> IfWhileBlock
+    return; ---> Return
+    } ---> ScopeClosing
+    return; ---> Return
 } ---> ScopeClosing
  ---> Emptyline
-void doo() { ---> MethodDeclare
-	if (true) { ---> IfWhileBlock
-		return; ---> Return
-	} ---> ScopeClosing
-	goo(5, 44); ---> lineError
-	while(true || 0 || 1) { ---> IfWhileBlock
-		doo(); ---> MethodCall
-	} ---> ScopeClosing
- ---> Emptyline
-	return; ---> Return
+void boo(){ ---> MethodDeclare
+    goo("ggg"); ---> MethodCall
 } ---> ScopeClosing
- ---> Emptyline
-void goo(int h, int i) { ---> lineError
-	int j = a; ---> Variable
-	return; ---> Return
-} ---> ScopeClosing
-ng

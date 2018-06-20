@@ -51,7 +51,7 @@ public class Parser {
     final private static String LOGICAL_OPERATORS = "(\\|\\||&&)";
     final private static String CONDITION_PATTEREN = "(^\\s*" + LOGICAL_OPERATORS + ")|" +
             LOGICAL_OPERATORS + "\\s*" + LOGICAL_OPERATORS + "|" + LOGICAL_OPERATORS + "\\s*$";
-    final private static String INT_OR_DOUBLE_REGEX = "(-?\\d)+(\\.\\d+)?";
+    final private static String BOOLEAN_EXP = "((-?\\d)+(\\.\\d+)?)|(s*((true)|(false))\\s*)";
     final static private String Names = "\\s*((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+)";
     final static private String EQUALS = "=";
     final static private String EMPTYSTRING = "";
@@ -68,10 +68,11 @@ public class Parser {
     final static private String returnVar = "\\s*return\\s*;\\s*";
     final static private String ScopeClosing = "\\s*}\\s*";
     final static private String Note = "^\\/\\/.*";
-    final static private String VariableCreation =  "^\\s*(final)?\\s*(final\\s+)?(int|boolean|double|String|char)\\s+([^\\s+]+\\s*)+;";
-//    final static private String VariableCreation = VariableDeceleration + "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))" +
-//            "\\s*(=\\s*(" + INT_OR_DOUBLE_REGEX + "|\\\"[\\w\\W]+\\\"|\\\'[\\w\\W]+\\\'|" + Names + "))?\\s*;?";
+    final static private String VariableCreation = "^\\s*(final)?\\s*(final\\s+)?(int|boolean|double|String|char)\\s+([^\\s+]+\\s*)+;";
+    //    final static private String VariableCreation = VariableDeceleration + "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))" +
+//            "\\s*(=\\s*(" + BOOLEAN_EXP + "|\\\"[\\w\\W]+\\\"|\\\'[\\w\\W]+\\\'|" + Names + "))?\\s*;?";
     public static final String INVALID_BOOLEAN_ARGUMENT = "Invalid boolean argument";
+    public static final String CONDITIONVALIDTYPES = BOOLEAN+"|"+INT+"|"+DOUBLE;
     public static final String INVALID_FILE = "Invalid sJava file";
     public static final String INVALID_LINE = "Invalid line format";
     public static final String EXIST_VAR = "There's another variable with the same name";
@@ -87,6 +88,7 @@ public class Parser {
     public static final String ERROR_UN_INITIALIZED_VARIABLE = "ERROR: unInitialized variable";
     private List<String> javaDoc;
     private static HashMap<String, String> pattenToDefDict;
+    private static HashMap<String, String> varTypeDict;
 
 
     /**
@@ -97,28 +99,41 @@ public class Parser {
      */
     public Parser(String sJavaFilePath) throws MyExceptions {
         javaDoc = convertToStringArr(sJavaFilePath);
-        pattenToDefDict = dictCreator();
     }
 
     public Parser() {
         javaDoc = null;
-        dictCreator();
     }
 
 
+    public static final String RECOGNIZE_INT_REGEX = "\\s*\\d+\\s*";
+
+    public static final String RECOGNIZE_STRING_REGEX = "\\s*\\\".*\\\"\\s*";
+
+    public static final String CHAR_REGEX_RECOGNIZE = "\\s*\\'.\\'\\s*";
+
+    public static final String DOUBLE_REGEX_RECOGNIZER = "\\s*\\d+(.\\d+)?\\s*";
+
     //creates dictionary of pattens and their meaning
-    private HashMap<String, String> dictCreator() {
-        HashMap<String, String> dictionary = new HashMap<>();
-        dictionary.put(VariableCreation, VARIABLE);
-        dictionary.put(MethodDeceleration, METHOD_DECLARE);
-        dictionary.put(MethodCall, METHOD_CALL);
-        dictionary.put(VariableAssignment, VARIABLE_ASSIGNMENT);
-        dictionary.put(IfWhile, IF_WHILE_BLOCK);
-        dictionary.put(ScopeClosing, SCOPE_CLOSING);
-        dictionary.put(Note, NOTE);
-        dictionary.put(EmptyLine, EMPTY_LINE);
-        dictionary.put(returnVar, RETURN);
-        return dictionary;
+    static {
+        HashMap<String, String> lineTypeDictionary = new HashMap<>();
+        lineTypeDictionary.put(VariableCreation, VARIABLE);
+        lineTypeDictionary.put(MethodDeceleration, METHOD_DECLARE);
+        lineTypeDictionary.put(MethodCall, METHOD_CALL);
+        lineTypeDictionary.put(VariableAssignment, VARIABLE_ASSIGNMENT);
+        lineTypeDictionary.put(IfWhile, IF_WHILE_BLOCK);
+        lineTypeDictionary.put(ScopeClosing, SCOPE_CLOSING);
+        lineTypeDictionary.put(Note, NOTE);
+        lineTypeDictionary.put(EmptyLine, EMPTY_LINE);
+        lineTypeDictionary.put(returnVar, RETURN);
+        pattenToDefDict = lineTypeDictionary;
+        HashMap<String, String> varTypeDic = new HashMap<>();
+        varTypeDic.put(INT, RECOGNIZE_INT_REGEX);
+        varTypeDic.put(STRING, RECOGNIZE_STRING_REGEX);
+        varTypeDic.put(CHAR, CHAR_REGEX_RECOGNIZE);
+        varTypeDic.put(DOUBLE, DOUBLE_REGEX_RECOGNIZER);
+        varTypeDic.put(BOOLEAN, ("(\\s*\\d+(.\\d+)?\\s*)|(\\s*((true)|(false))\\s*)"));
+        varTypeDict = varTypeDic;
     }
 
 
@@ -172,7 +187,10 @@ public class Parser {
                     }
 
                 }
-                variable = new Variables(var[1], var[0], false, false);
+                if(!isNameValid(var[1])){
+                    throw new MyExceptions(INVALID_NAME);
+                }
+                variable = new Variables(var[1], var[0], true, false);
                 finalVars.add(variable);
             } else {
                 throw new MyExceptions(INCOMPATIBLE_VAR_DECELERATION);
@@ -286,7 +304,7 @@ public class Parser {
 
     // checks if name of method/ variable is valid
     private boolean isNameValid(String name) {
-        name.replace(Parser.WHITE_SPACE, "");
+        name.replace(Parser.WHITE_SPACE, EMPTYSTRING);
         Pattern pattern = Pattern.compile(Names);
         Matcher matcher = pattern.matcher(name);
         return matcher.matches();
@@ -478,7 +496,7 @@ public class Parser {
     private boolean isConditionValid(ScopeC scopeC, String condition) throws MyExceptions {
         condition = condition.trim();
         Method method = scopeC.getScopesMethod();
-        if (!(isConditionTextValid(condition))) {
+        if (!(isConditionTextValid(condition,scopeC))) {
             Variables var = scopeC.getVariable(condition); // condition might be variable
             if (var == null) {
                 throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); //todo exception no such variable
@@ -487,7 +505,7 @@ public class Parser {
             if (isaBooleanArgValid(var, method.isCalled(), method)) {
                 throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT);
             }
-            if (!method.isCalled() || isConditionTextValid(var.getData().toString())) {
+            if (!method.isCalled() || isConditionTextValid(condition,scopeC)) {
                 return true;
             }
             throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); //todo variable is not a double/int/ initialized
@@ -508,12 +526,33 @@ public class Parser {
 
 
     // checks if a string of condition is a valid argument.
-    private boolean isConditionTextValid(String string) {
+    private boolean isConditionTextValid(String condition,ScopeC scopeC) {
         Pattern pattern;
         Matcher matcher;
-        pattern = Pattern.compile(INT_OR_DOUBLE_REGEX);
-        matcher = pattern.matcher(string);
-        return matcher.matches() || string.equals(FALSE) || string.equals(TRUE);
+        pattern = Pattern.compile(BOOLEAN_EXP);
+        matcher = pattern.matcher(condition);
+        if(matcher.matches()) {
+            return true;
+        }
+        Variables var = scopeC.getVariable(condition);
+        if (var==null){
+            return false;
+        }
+        Method method = scopeC.getScopesMethod();
+        String type = var.getType();
+        pattern = Pattern.compile(CONDITIONVALIDTYPES);
+        matcher = pattern.matcher(type);
+        if(var.isInitialized()&&(matcher.matches())){
+            return true;
+        }
+
+
+    return false;}
+
+    public boolean isTypeMatch(String chekedVar, String type) {
+        Pattern pattern = Pattern.compile(varTypeDict.get(type));
+        Matcher matcher = pattern.matcher(chekedVar);
+        return matcher.matches();
 
     }
 }

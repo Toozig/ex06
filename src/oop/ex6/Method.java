@@ -39,9 +39,6 @@ public class Method extends ScopeC {
     // checks if the method variable ar valid
     private ArrayList<Variables> isLegalVar(ArrayList<Variables> varList) throws MyExceptions {
         for (Variables variable: varList) {
-            if(variable.getData() != null){
-                throw new MyExceptions(UNINITIALIZED_VARIABLE_ERROR); // todo exceptions , initialized variable
-            }
             this.addVariable(variable);
         }
         return varList;
