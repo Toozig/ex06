@@ -113,7 +113,7 @@ public class Parser {
      * @param sJavaFilePath simplified java document
      * @throws MyExceptions in case file is not legal txt document.
      */
-    public Parser(String sJavaFilePath) throws MyExceptions {
+    public Parser(String sJavaFilePath) throws MyExceptions, IOException {
         javaDoc = convertToStringArr(sJavaFilePath);
     }
 
@@ -569,16 +569,9 @@ public class Parser {
      *
      * @return Array of Strings.
      */
-    protected List<String> convertToStringArr(String path) throws MyExceptions {
-
-        try {
-            Path filePath = get(path);
-            return Files.readAllLines(filePath);
-        }
-        // TODO see HTF we handle the exception.
-        catch (IOException e) {
-            throw new MyExceptions(INVALID_FILE);
-        }
+    protected List<String> convertToStringArr(String path) throws IOException {
+        Path filePath = get(path);
+        return Files.readAllLines(filePath);
     }
 
     /**
