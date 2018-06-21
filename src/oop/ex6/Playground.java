@@ -11,9 +11,9 @@ import java.util.regex.Pattern;
 public class Playground {
 
 
-    private static String[] singelVarArrCreator(String expression) throws MyExceptions {
+    private static String[] singleVarArrCreator(String expression) throws MyExceptions {
         expression = expression.trim();
-        String ptrn = "([A-Za-z0-9_]*)\\s*(=\\s*([A-Za-z0-9_]+))\\s*";
+        String ptrn = "([A-Za-z0-9_]*)\\s*(=\\s*(([A-Za-z0-9_]+)|\\\".*\\\"))?\\s*";
         Pattern pattern = Pattern.compile(ptrn);
         Matcher matcher = pattern.matcher(expression);
         if(!matcher.matches()) {
@@ -24,8 +24,8 @@ public class Playground {
 
 
     public static void main(String[] args) throws ClassNotFoundException, MyExceptions, IOException {
-        String line = "ads dfs   = fgfdgfd ";
-        String[] dafdas = singelVarArrCreator(line);
+        String line = "eger";
+        String[] dafdas = singleVarArrCreator(line);
     }
 }
 //        System.out.println(matcher.group(1));

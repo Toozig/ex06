@@ -94,14 +94,14 @@ public class Parser {
     final static private int NOTCHAR = 3;
     final static private String MORE_THAN_ONE_VALUE = "More than one value";
     final static private String SINGLEWHITESPACE = " ";
-    final static private  String RECOGNIZE_INT_REGEX = "\\s*\\-?\\d+\\s*";
-    final static private  String RECOGNIZE_STRING_REGEX = "\\s*\\\".*\\\"\\s*";
-    final static private  String CHAR_REGEX_RECOGNIZE = "\\s*\\'.\\'\\s*";
-    final static private  String DOUBLE_REGEX_RECOGNIZER = "\\s*\\-?\\d+(\\.\\d+)?\\s*";
+    final static private String RECOGNIZE_INT_REGEX = "\\s*\\-?\\d+\\s*";
+    final static private String RECOGNIZE_STRING_REGEX = "\\s*\\\".*\\\"\\s*";
+    final static private String CHAR_REGEX_RECOGNIZE = "\\s*\\'.\\'\\s*";
+    final static private String DOUBLE_REGEX_RECOGNIZER = "\\s*\\-?\\d+(\\.\\d+)?\\s*";
     public static final String INVALID_LINE_OF_VAR_CREATION = "Invalid line of var creation";
     public static final int VALUE = 3;
     public static final int ARGUMENT = 1;
-    public static final String ASSIGNINGREGEX = "([A-Za-z0-9_])\\s(=\\s*(([A-Za-z0-9_]+)|\\\".*\\\"))?\\s*";
+    public static final String ASSIGNINGREGEX = "([A-Za-z0-9_]*)\\s*(=\\s*(([A-Za-z0-9_.-]+)|(\".*\")|('.')))?\\s*";
     private List<String> javaDoc;
     private static HashMap<String, String> pattenToDefDict;
     private static HashMap<String, String> varTypeDict;
@@ -154,15 +154,16 @@ public class Parser {
         String ptrn = ASSIGNINGREGEX;
         Pattern pattern = Pattern.compile(ptrn);
         Matcher matcher = pattern.matcher(expression);
-        if(!matcher.matches()) {
-            throw  new MyExceptions(INVALID_LINE_OF_VAR_CREATION);
+        if (!matcher.matches()) {
+            throw new MyExceptions(INVALID_LINE_OF_VAR_CREATION);
         }
-        return  new String[] {matcher.group(ARGUMENT), matcher.group(VALUE)};
+        return new String[]{matcher.group(ARGUMENT), matcher.group(VALUE)};
     }
 
     /**
      * Assigns var with a data
-     * @param line the line of the assignment
+     *
+     * @param line  the line of the assignment
      * @param scope the current scope
      * @throws MyExceptions thrown if assigning isn't legal
      */
@@ -204,6 +205,7 @@ public class Parser {
 
     /**
      * Parse variables from method deceleration
+     *
      * @param vars the string of the vars
      * @return list with the vars
      * @throws MyExceptions thrown if the vars doesn't match the method deceleration
@@ -244,9 +246,10 @@ public class Parser {
 
     /**
      * Gets an existing var with the matching name and var
-     * @param scope the current scope
+     *
+     * @param scope    the current scope
      * @param varValue the name of the var
-     * @param type the type of the var
+     * @param type     the type of the var
      * @return the exist var if exists
      * @throws MyExceptions throws an exception if doesn't exist
      */
@@ -260,10 +263,10 @@ public class Parser {
     }
 
 
-
     /**
      * Parses a var deceleration
-     * @param line the variable line
+     *
+     * @param line  the variable line
      * @param scope the current scope
      * @return the vars list
      * @throws MyExceptions
@@ -278,14 +281,14 @@ public class Parser {
         String type = extractType(varLine[FIRST_VAR_DECLARE]);
         varLine[FIRST_VAR_DECLARE] = varLine[FIRST_VAR_DECLARE].replace(type, EMPTYSTRING).trim();
         String[] variableString = singelVarArrCreator(varLine[FIRST_VAR_DECLARE]);
-        if(variableString[1]!=null){
+        if (variableString[1] != null) {
             isInitialized = true;
 
         }
         String[] finalLst = trimStringLst(variableString);
         vars.add(createVar(finalLst, isInitialized, type, isFinal, scope, vars));
         for (int i = ONE; i < varLine.length; i++) {
-            finalLst = trimStringLst(varLine[i].split(EQUALS));
+            finalLst = singelVarArrCreator(varLine[i]);
             isInitialized = false;
             vars.add(createVar(finalLst, isInitialized, type, isFinal, scope, vars));
 
@@ -322,8 +325,9 @@ public class Parser {
 
     /**
      * Parse a method call
+     *
      * @param scope the current scope
-     * @param line the line of the method call
+     * @param line  the line of the method call
      * @return the updated method
      * @throws MyExceptions if something is incompatible with the call and the original method
      */
@@ -348,20 +352,20 @@ public class Parser {
             boolean isTypeValid = isTypeMatch(input, argType);
             if (isTypeValid) {
                 varArg.setInitialized(true);
-            }
-            else{
-            Variables var = getExistingVar(scope, input, argType);
-            if (!var.getType().equals(argType) || !var.isInitialized()) {
-                throw new MyExceptions(TYPEERROR);
+            } else {
+                Variables var = getExistingVar(scope, input, argType);
+                if (!var.getType().equals(argType) || !var.isInitialized()) {
+                    throw new MyExceptions(TYPEERROR);
+                }
             }
         }
-    }
         return method;
-}
+    }
 
     /**
      * Get a substring of a string by using regex
-     * @param line the line to check if matches
+     *
+     * @param line  the line to check if matches
      * @param regex the regex
      * @return the matched string
      */
@@ -375,6 +379,7 @@ public class Parser {
 
     /**
      * Check if the variable name is valid
+     *
      * @param name the name to check
      * @return true iff the name is valid
      */
@@ -387,6 +392,7 @@ public class Parser {
 
     /**
      * Is the method name valid
+     *
      * @param name the name
      * @return true iff the methid name valid
      */
@@ -399,12 +405,13 @@ public class Parser {
 
     /**
      * Creates new variable
-     * @param line the line to create the var from
+     *
+     * @param line          the line to create the var from
      * @param isInitialized is the var initialized
-     * @param type the var type
-     * @param isFinal is the var final
-     * @param scope the current scope
-     * @param vars a list of the current variables
+     * @param type          the var type
+     * @param isFinal       is the var final
+     * @param scope         the current scope
+     * @param vars          a list of the current variables
      * @return the updated variable list
      * @throws MyExceptions if the data or the name is wrong
      */
@@ -415,26 +422,24 @@ public class Parser {
         if (line.length > PROPPERLENGTH) {
             throw new MyExceptions(MORE_THAN_ONE_VALUE);
         }
-        switch (line.length) {
-            case PROPPERLENGTH:
-                isInitialized = isTypeMatch(line[ONE], type);
+        String data = line[ONE];
+        if (data != null) {
+            isInitialized = isTypeMatch(line[ONE], type);
+            if (!isInitialized) {
+                isInitialized = CheckIfExistVar(line[ONE], type, scope);
                 if (!isInitialized) {
-                    isInitialized = CheckIfExistVar(line[ONE], type, scope);
-                    if (!isInitialized) {
-                        throw new MyExceptions(ASSIGNING_WITH_NON_EXISTING_VARIABLE);
-                    }
+                    throw new MyExceptions(ASSIGNING_WITH_NON_EXISTING_VARIABLE);
                 }
-                break;
-        }
+            }
 
-        if (!isNameValid(name)) {
+        }
+        if (!isNameValid(name)){
             throw new MyExceptions(INVALID_NAME);
         }
-        if (isThereAnotherVarIdentical(name, scope, vars)) {
+        if (isThereAnotherVarIdentical(name, scope, vars)){
             throw new MyExceptions(EXIST_VAR);
         }
-
-        if (isFinal && !isInitialized) {
+        if (isFinal && !isInitialized){
             throw new MyExceptions(Final_Var_No_INITIALIZION);
         }
         Variables var = new Variables(name, type, isInitialized, isFinal);
@@ -443,9 +448,10 @@ public class Parser {
 
     /**
      * Check if theres another var with the same name
-     * @param name the name to verify
+     *
+     * @param name  the name to verify
      * @param scope current scope
-     * @param vars Variable arraylist of the method args, check also there
+     * @param vars  Variable arraylist of the method args, check also there
      * @return true iff another identical var exists
      */
 
@@ -464,13 +470,16 @@ public class Parser {
 
     /**
      * Trims a string list
+     *
      * @param lst the list to trim
      * @return the trimmed string list
      */
     private String[] trimStringLst(String[] lst) {
         String[] finalLst = new String[lst.length];
         for (int i = ZERO; i < lst.length; i++) {
-            finalLst[i] = lst[i].trim();
+            if (lst[i] != null) {
+                finalLst[i] = lst[i].trim();
+            }
         }
         return finalLst;
 
@@ -479,6 +488,7 @@ public class Parser {
 
     /**
      * Check if the variable is final
+     *
      * @param line the line to parse
      * @return true iff theres a final command
      */
@@ -490,6 +500,7 @@ public class Parser {
 
     /**
      * Extract the type from the arg line
+     *
      * @param line the line to parse
      * @return the type
      */
