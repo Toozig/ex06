@@ -1,1 +1,2 @@
-boolean a , b , c };
+//uses tabs, not spaces
+int	a	=	3;

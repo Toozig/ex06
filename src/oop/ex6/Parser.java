@@ -218,11 +218,14 @@ public class Parser {
         Matcher matcher;
         pattern = Pattern.compile(METHOD_VARS);
         for (String item : variables) {
+            boolean isFinal = false;
             matcher = pattern.matcher(item);
             String[] var = item.trim().split(WHITE_SPACE);
-            if (!(var.length == PROPPERLENGTH)) {
+            if (var.length >3||var.length<2) {
                 throw new MyExceptions(INCOMPATIBLE_VAR_DECELERATION);
             }
+            String type = var[METHODVARINDEXTYPE];
+            String name = var[METHODVARINDEXNAME];
             if (matcher.matches()) {
                 for (Variables methodVar : finalVars) {
                     if (var[ONE].equals(methodVar.getName())) {
@@ -230,10 +233,18 @@ public class Parser {
                     }
 
                 }
+                if(var.length==3){
+                    isFinal = var[0].equals(FINAL);
+                    type = var[1];
+                    name = var[2];
+                }
+
                 if (!isNameValid(var[METHODVARINDEXNAME])) {
                     throw new MyExceptions(INVALID_NAME);
                 }
-                variable = new Variables(var[METHODVARINDEXNAME], var[METHODVARINDEXTYPE], true, false);
+
+
+                variable = new Variables(name, type, true, isFinal);
                 finalVars.add(variable);
             } else {
                 throw new MyExceptions(INCOMPATIBLE_VAR_DECELERATION);

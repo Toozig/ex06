@@ -12,11 +12,9 @@ public class Facade {
     private static final String RETURN = "Return";
     private static final String INVALID_IN_THE_OUTER_SCOPE = "Invalid in the outer scope";
     private static final String METHOD_CALL = "MethodCall";
-    public static final String NOT_ENOUGH_SCOPE_CLOSING = "Not enough scope closing";
     private static final String NO_RETURN_IN_METHOD_ERROR = "No return in method";
     private static final String NOT_ENOUGH_CLOSING_BRACKETS = "Not enough closing brackets";
-    public static final String DOESN_T_EXIST = "Doesn't exist";
-    public static final String NOTE = "Note";
+    private static final String NOTE = "Note";
 
     static Method createMethod(List<String> javadoc, int index, Line line, ScopeC globalScope) throws MyExceptions {
         Method method = (Method) line.interperate(globalScope);
