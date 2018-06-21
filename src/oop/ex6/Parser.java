@@ -106,15 +106,13 @@ public class Parser {
     }
 
 
-    public static final String RECOGNIZE_INT_REGEX = "\\s*\\-?\\d+\\s*";
+    public static final String RECOGNIZE_INT_REGEX = "\\s*\\d+\\s*";
 
     public static final String RECOGNIZE_STRING_REGEX = "\\s*\\\".*\\\"\\s*";
 
     public static final String CHAR_REGEX_RECOGNIZE = "\\s*\\'.\\'\\s*";
 
-    public static final String DOUBLE_REGEX_RECOGNIZER = "\\s*\\-?\\d+(\\.\\d+)?\\s*";
-
-    public static final String BOOLEAN_RECOGNIZE_REGEX = DOUBLE_REGEX_RECOGNIZER +"|(\\s*((true)|(false))\\s*)";
+    public static final String DOUBLE_REGEX_RECOGNIZER = "\\s*\\d+(.\\d+)?\\s*";
 
     //creates dictionary of pattens and their meaning
     static {
@@ -134,7 +132,7 @@ public class Parser {
         varTypeDic.put(STRING, RECOGNIZE_STRING_REGEX);
         varTypeDic.put(CHAR, CHAR_REGEX_RECOGNIZE);
         varTypeDic.put(DOUBLE, DOUBLE_REGEX_RECOGNIZER);
-        varTypeDic.put(BOOLEAN, BOOLEAN_RECOGNIZE_REGEX);
+        varTypeDic.put(BOOLEAN, ("(\\s*\\d+(.\\d+)?\\s*)|(\\s*((true)|(false))\\s*)"));
         varTypeDict = varTypeDic;
     }
 
@@ -222,8 +220,7 @@ public class Parser {
         varLine[FIRST_VAR_DECLARE] = varLine[FIRST_VAR_DECLARE].replace(FINAL, EMPTYSTRING).trim();
         String type = extractType(varLine[FIRST_VAR_DECLARE]);
         varLine[FIRST_VAR_DECLARE] = varLine[FIRST_VAR_DECLARE].replace(type, EMPTYSTRING).trim();
-        String varbial  = extractString(varLine[FIRST_VAR_DECLARE], "[^=]=(\\S*).*");
-        String[] variableString = varLine[FIRST_VAR_DECLARE].split(EQUALS); //todo equal here sucks alot of thei
+        String[] variableString = varLine[FIRST_VAR_DECLARE].split(EQUALS);
         String[] finalLst = trimStringLst(variableString);
         boolean isInitialized= false;
         vars.add(createVar(finalLst, isInitialized, type, isFinal, scope));
@@ -254,10 +251,10 @@ public class Parser {
         matcher.find();
         String methodName = matcher.group(1);
         if (!isNameValid(methodName) || scope.getFather() != null) {
-            throw new MyExceptions(INCOMPATIBLE_METHOD_NAME);
+            throw new MyExceptions(INCOMPATIBLE_METHOD_NAME); //todo exceptions
         }
         ArrayList<Variables> arguments = new ArrayList<>();
-        if (!methodVars.equals(EMPTYSTRING)) {
+        if (!methodVars.equals(EMPTYSTRING)) { //todo  vars stuff in genetic
             arguments = parseVarsFromMethod(methodVars);
         }
         return new Method(scope, arguments, methodName);
@@ -405,8 +402,7 @@ public class Parser {
     private boolean CheckIfExistVar(String varData, String type, ScopeC scope) {
         Variables existVar = scope.getVariable(varData);
         if (existVar != null) {
-            String varType = existVar.getType();
-            if (varType.equals(type) || (type.equals(BOOLEAN) && (varType.equals(INT) || varType.equals(DOUBLE)))){
+            if (existVar.getType().equals(type)) {
                 return existVar.isInitialized();
             }
         }
