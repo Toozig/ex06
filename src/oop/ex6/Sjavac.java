@@ -7,7 +7,7 @@ import java.util.List;
 public class Sjavac {
 
 
-    public static final String METHOD_INSIDE_A_METHOD = "Method inside a method";
+    private static final String METHOD_INSIDE_A_METHOD = "Method inside a method";
     private static final String IF_WHILE_BLOCK = "IfWhileBlock";
     private static final String METHOD_DECLARE = "MethodDeclare";
     private static final String SCOPE_CLOSING = "ScopeClosing";
@@ -15,11 +15,10 @@ public class Sjavac {
     private static final String INVALID_IN_THE_OUTER_SCOPE = "Invalid in the outer scope";
     private static final String METHOD_CALL = "MethodCall";
     public static final String NOT_ENOUGH_SCOPE_CLOSING = "Not enough scope closing";
-    public static final String NO_RETURN_IN_METHOD_ERROR = "No return in method";
-    public static final String NOT_ENOUGH_CLOSING_BRACKETS = "Not enough closing brackets";
+    private static final String NO_RETURN_IN_METHOD_ERROR = "No return in method";
+    private static final String NOT_ENOUGH_CLOSING_BRACKETS = "Not enough closing brackets";
 
     public static void main(String[] args) throws MyExceptions {
-
         ScopeC curScope = null;
         try {
             curScope = globalScopeCreator(args[0]);
@@ -68,33 +67,7 @@ public class Sjavac {
                 i = i + method.getScopeLines().size();
             }
             line.interperate(curScope);
-
         }
-//            if (counter == 0) {
-//                if (!newScope.equals(curScope)) {
-//                    curScope = newScope;
-//                    counter++;
-//                }
-//            } else if (lineType.equals(IF_WHILE_BLOCK) || lineType.equals(METHOD_DECLARE)) {
-//                counter++;
-//                curScope.addScopeLines(line);
-//            } else if (lineType.equals(SCOPE_CLOSING)) {
-//                counter--;
-//                curScope.addScopeLines(line);
-//                if (counter == 0) {
-//                    curScope = curScope.getFather();
-//                }
-//            } else {
-//                curScope.addScopeLines(line);
-//            }
-//
-//        }
-//        if (counter != 0) {
-//            throw new MyExceptions(NOT_ENOUGH_SCOPE_CLOSING);
-//        }
-//        if(!curScope.GotReturn()){
-//            throw new MyExceptions("No return statement");
-//        }
         return curScope;
     }
 

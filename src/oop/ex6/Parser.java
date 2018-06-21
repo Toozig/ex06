@@ -98,6 +98,10 @@ public class Parser {
     final static private  String RECOGNIZE_STRING_REGEX = "\\s*\\\".*\\\"\\s*";
     final static private  String CHAR_REGEX_RECOGNIZE = "\\s*\\'.\\'\\s*";
     final static private  String DOUBLE_REGEX_RECOGNIZER = "\\s*\\-?\\d+(\\.\\d+)?\\s*";
+    public static final String INVALID_LINE_OF_VAR_CREATION = "Invalid line of var creation";
+    public static final int VALUE = 3;
+    public static final int ARGUMENT = 1;
+    public static final String ASSIGNINGREGEX = "([A-Za-z0-9_])\\s(=\\s*(([A-Za-z0-9_]+)|\\\".*\\\"))?\\s*";
     private List<String> javaDoc;
     private static HashMap<String, String> pattenToDefDict;
     private static HashMap<String, String> varTypeDict;
@@ -143,6 +147,17 @@ public class Parser {
         varTypeDic.put(DOUBLE, DOUBLE_REGEX_RECOGNIZER);
         varTypeDic.put(BOOLEAN, ("(\\s*\\-?\\d+(\\.\\d+)?\\s*)|(\\s*((true)|(false))\\s*)"));
         varTypeDict = varTypeDic;
+    }
+
+    private String[] singelVarArrCreator(String expression) throws MyExceptions {
+        expression = expression.trim();
+        String ptrn = ASSIGNINGREGEX;
+        Pattern pattern = Pattern.compile(ptrn);
+        Matcher matcher = pattern.matcher(expression);
+        if(!matcher.matches()) {
+            throw  new MyExceptions(INVALID_LINE_OF_VAR_CREATION);
+        }
+        return  new String[] {matcher.group(ARGUMENT), matcher.group(VALUE)};
     }
 
     /**
@@ -256,14 +271,18 @@ public class Parser {
     protected ArrayList<Variables> parseVar(String line, ScopeC scope) throws MyExceptions {
         ArrayList<Variables> vars = new ArrayList<>();
         String[] varLine = line.split(COMMA);
+        boolean isInitialized = false;
         varLine[varLine.length - ONE] = varLine[varLine.length - ONE].replace(END_STATEMENT, EMPTYSTRING);
         boolean isFinal = isFinal(varLine[FIRST_VAR_DECLARE]);
         varLine[FIRST_VAR_DECLARE] = varLine[FIRST_VAR_DECLARE].replace(FINAL, EMPTYSTRING).trim();
         String type = extractType(varLine[FIRST_VAR_DECLARE]);
         varLine[FIRST_VAR_DECLARE] = varLine[FIRST_VAR_DECLARE].replace(type, EMPTYSTRING).trim();
-        String[] variableString = varLine[FIRST_VAR_DECLARE].split(EQUALS);
+        String[] variableString = singelVarArrCreator(varLine[FIRST_VAR_DECLARE]);
+        if(variableString[1]!=null){
+            isInitialized = true;
+
+        }
         String[] finalLst = trimStringLst(variableString);
-        boolean isInitialized = false;
         vars.add(createVar(finalLst, isInitialized, type, isFinal, scope, vars));
         for (int i = ONE; i < varLine.length; i++) {
             finalLst = trimStringLst(varLine[i].split(EQUALS));
