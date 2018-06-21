@@ -68,7 +68,7 @@ public class Parser {
     final static private String returnVar = "\\s*return\\s*;\\s*";
     final static private String ScopeClosing = "\\s*}\\s*";
     final static private String Note = "^\\/\\/.*";
-    final static private String VariableCreation = "^\\s*(final)?\\s*(final\\s+)?(int|boolean|double|String|char)\\s+([^\\s+]+\\s*)+;";
+    final static private String VariableCreation = "^\\s*(final)?\\s*(final\\s+)?(int|boolean|double|String|char)\\s+([^\\s+]+\\s*)+;\\s*";
     //    final static private String VariableCreation = VariableDeceleration + "\\s+(((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+))" +
 //            "\\s*(=\\s*(" + BOOLEAN_EXP + "|\\\"[\\w\\W]+\\\"|\\\'[\\w\\W]+\\\'|" + Names + "))?\\s*;?";
     public static final String INVALID_BOOLEAN_ARGUMENT = "Invalid boolean argument";
@@ -106,13 +106,13 @@ public class Parser {
     }
 
 
-    public static final String RECOGNIZE_INT_REGEX = "\\s*\\d+\\s*";
+    public static final String RECOGNIZE_INT_REGEX = "\\s*\\-?\\d+\\s*";
 
     public static final String RECOGNIZE_STRING_REGEX = "\\s*\\\".*\\\"\\s*";
 
     public static final String CHAR_REGEX_RECOGNIZE = "\\s*\\'.\\'\\s*";
 
-    public static final String DOUBLE_REGEX_RECOGNIZER = "\\s*\\d+(.\\d+)?\\s*";
+    public static final String DOUBLE_REGEX_RECOGNIZER = "\\s*\\-?\\d+(\\.\\d+)?\\s*";
 
     //creates dictionary of pattens and their meaning
     static {
@@ -132,7 +132,7 @@ public class Parser {
         varTypeDic.put(STRING, RECOGNIZE_STRING_REGEX);
         varTypeDic.put(CHAR, CHAR_REGEX_RECOGNIZE);
         varTypeDic.put(DOUBLE, DOUBLE_REGEX_RECOGNIZER);
-        varTypeDic.put(BOOLEAN, ("(\\s*\\d+(.\\d+)?\\s*)|(\\s*((true)|(false))\\s*)"));
+        varTypeDic.put(BOOLEAN, ("(\\s*\\-?\\d+(\\.\\d+)?\\s*)|(\\s*((true)|(false))\\s*)"));
         varTypeDict = varTypeDic;
     }
 
@@ -223,11 +223,11 @@ public class Parser {
         String[] variableString = varLine[FIRST_VAR_DECLARE].split(EQUALS);
         String[] finalLst = trimStringLst(variableString);
         boolean isInitialized= false;
-        vars.add(createVar(finalLst, isInitialized, type, isFinal, scope));
+        vars.add(createVar(finalLst, isInitialized, type, isFinal, scope,vars));
         for (int i = 1; i < varLine.length; i++) {
             finalLst = trimStringLst(varLine[i].split(EQUALS));
             isInitialized = false;
-            vars.add(createVar(finalLst, isInitialized, type, isFinal, scope));
+            vars.add(createVar(finalLst, isInitialized, type, isFinal, scope,vars));
 
 
         }
@@ -311,7 +311,7 @@ public class Parser {
     }
 
 
-    private Variables createVar(String[] line, boolean isInitialized, String type, Boolean isFinal, ScopeC scope) throws NumberFormatException, MyExceptions {
+    private Variables createVar(String[] line, boolean isInitialized, String type, Boolean isFinal, ScopeC scope, ArrayList<Variables> vars) throws NumberFormatException, MyExceptions {
         String name = line[0];
         switch (line.length) {
             case 2:
@@ -328,9 +328,10 @@ public class Parser {
         if (!isNameValid(name)) {
             throw new MyExceptions(INVALID_NAME);
         }
-        if (isThereAnotherVarIdentical(name, scope)) {
+        if (isThereAnotherVarIdentical(name, scope,vars)) {
             throw new MyExceptions(EXIST_VAR);
         }
+
         if (isFinal && !isInitialized) {
             throw new MyExceptions(Final_Var_No_INITIALIZION);
         }
@@ -339,12 +340,16 @@ public class Parser {
     }
 
 
-    private boolean isThereAnotherVarIdentical(String name, ScopeC scope) {
-        for (Variables var : scope.getVarArray()) {
+    private boolean isThereAnotherVarIdentical(String name, ScopeC scope,ArrayList<Variables> vars) {
+        ArrayList<Variables> allVars = new ArrayList<>();
+        allVars.addAll(scope.getVarArray());
+        allVars.addAll(vars);
+        for (Variables var : allVars) {
             if (var.getName().equals(name)) {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -402,11 +407,17 @@ public class Parser {
     private boolean CheckIfExistVar(String varData, String type, ScopeC scope) {
         Variables existVar = scope.getVariable(varData);
         if (existVar != null) {
-            if (existVar.getType().equals(type)) {
+            if (TypeIsValidForBooleanArg(type, existVar)) {
                 return existVar.isInitialized();
             }
         }
         return false;
+    }
+
+    private boolean TypeIsValidForBooleanArg(String type, Variables existVar) {
+        String varType = existVar.getType();
+        return varType.equals(type)||(type.equals(BOOLEAN)&&
+                (varType.equals(INT)||varType.equals(DOUBLE)))|| type.equals(DOUBLE) && varType.equals(INT);
     }
 
     /**
