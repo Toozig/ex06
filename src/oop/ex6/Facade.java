@@ -16,7 +16,7 @@ public class Facade {
     private static final String NOT_ENOUGH_CLOSING_BRACKETS = "Not enough closing brackets";
     private static final String NOTE = "Note";
 
-    static Method createMethod(List<String> javadoc, int index, Line line, ScopeC globalScope) throws MyExceptions {
+    static Method createMethod(List<String> javadoc, int index, Line line, ScopeC globalScope) throws ParsingException {
         Method method = (Method) line.interperate(globalScope);
         int scopeOpen = 1;
         Parser parser = new Parser();
@@ -40,18 +40,18 @@ public class Facade {
                     scopeOpen--;
                     break;
                 case METHOD_DECLARE:
-                    throw new MyExceptions(METHOD_INSIDE_A_METHOD);
+                    throw new ParsingException(METHOD_INSIDE_A_METHOD);
             }
 
             method.addScopeLines(methodLine);
             if (scopeOpen == 0) {
                 if (!method.GotReturn()) {
-                    throw new MyExceptions(NO_RETURN_IN_METHOD_ERROR);
+                    throw new ParsingException(NO_RETURN_IN_METHOD_ERROR);
                 }
                 return method;
             }
         }
-        throw new MyExceptions(NOT_ENOUGH_CLOSING_BRACKETS);
+        throw new ParsingException(NOT_ENOUGH_CLOSING_BRACKETS);
     }
 
 
@@ -68,7 +68,7 @@ public class Facade {
 
 
     // create the global scope of of the java doc
-    static ScopeC globalScopeCreator(String filePath) throws MyExceptions, IOException {
+    static ScopeC globalScopeCreator(String filePath) throws ParsingException, IOException {
         ScopeC curScope = new ScopeC(null);
         Parser parser = new Parser(filePath);
         List<String> javadoc = parser.getJavaDoc();
@@ -78,7 +78,7 @@ public class Facade {
             String lineType = parser.lineDefining(commandLine);
             Line line = new Line(commandLine, lineType);
             if (isNotValidGlobalLine(lineType)) {
-                throw new MyExceptions(INVALID_IN_THE_OUTER_SCOPE);
+                throw new ParsingException(INVALID_IN_THE_OUTER_SCOPE);
             }
             if (lineType.equals(METHOD_DECLARE)) {
                 Method method = createMethod(javadoc, i, line, curScope);

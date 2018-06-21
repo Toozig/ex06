@@ -111,9 +111,9 @@ public class Parser {
      * constructor of the parser class
      *
      * @param sJavaFilePath simplified java document
-     * @throws MyExceptions in case file is not legal txt document.
+     * @throws ParsingException in case file is not legal txt document.
      */
-    public Parser(String sJavaFilePath) throws MyExceptions, IOException {
+    public Parser(String sJavaFilePath) throws ParsingException, IOException {
         javaDoc = convertToStringArr(sJavaFilePath);
     }
 
@@ -121,7 +121,7 @@ public class Parser {
     /**
      * constructor of the parser class
      *
-     * @throws MyExceptions in case file is not legal txt document.
+     * @throws ParsingException in case file is not legal txt document.
      */
     public Parser() {
         javaDoc = null;
@@ -149,13 +149,13 @@ public class Parser {
         varTypeDict = varTypeDic;
     }
 
-    private String[] singelVarArrCreator(String expression) throws MyExceptions {
+    private String[] singelVarArrCreator(String expression) throws ParsingException {
         expression = expression.trim();
         String ptrn = ASSIGNINGREGEX;
         Pattern pattern = Pattern.compile(ptrn);
         Matcher matcher = pattern.matcher(expression);
         if (!matcher.matches()) {
-            throw new MyExceptions(INVALID_LINE_OF_VAR_CREATION);
+            throw new ParsingException(INVALID_LINE_OF_VAR_CREATION);
         }
         return new String[]{matcher.group(ARGUMENT), matcher.group(VALUE)};
     }
@@ -165,9 +165,9 @@ public class Parser {
      *
      * @param line  the line of the assignment
      * @param scope the current scope
-     * @throws MyExceptions thrown if assigning isn't legal
+     * @throws ParsingException thrown if assigning isn't legal
      */
-    protected void assignVar(String line, ScopeC scope) throws MyExceptions {
+    protected void assignVar(String line, ScopeC scope) throws ParsingException {
         String[] varLine = line.split(COMMA);
         varLine[varLine.length - ONE] = varLine[varLine.length - ONE].replace(END_STATEMENT, EMPTYSTRING);
         for (String var : varLine) {
@@ -187,7 +187,7 @@ public class Parser {
                     Variables existVar = getExistingVar(scope, varValue, curVariable.getType());
                     Method method = (Method) scope;
                     if (!existVar.isInitialized()) {
-                        throw new MyExceptions(ERROR_UN_INITIALIZED_VARIABLE);
+                        throw new ParsingException(ERROR_UN_INITIALIZED_VARIABLE);
                     }
 
                 }
@@ -196,7 +196,7 @@ public class Parser {
                 }
 
             } else {
-                throw new MyExceptions(TRYING_TO_ASSIGN_NON_EXISTING_VARIABLE);
+                throw new ParsingException(TRYING_TO_ASSIGN_NON_EXISTING_VARIABLE);
             }
 
         }
@@ -208,9 +208,9 @@ public class Parser {
      *
      * @param vars the string of the vars
      * @return list with the vars
-     * @throws MyExceptions thrown if the vars doesn't match the method deceleration
+     * @throws ParsingException thrown if the vars doesn't match the method deceleration
      */
-    protected ArrayList<Variables> parseVarsFromMethod(String vars) throws MyExceptions {
+    protected ArrayList<Variables> parseVarsFromMethod(String vars) throws ParsingException {
         ArrayList<Variables> finalVars = new ArrayList<>();
         String[] variables = vars.split(COMMA);
         Variables variable;
@@ -222,14 +222,14 @@ public class Parser {
             matcher = pattern.matcher(item);
             String[] var = item.trim().split(WHITE_SPACE);
             if (var.length >3||var.length<2) {
-                throw new MyExceptions(INCOMPATIBLE_VAR_DECELERATION);
+                throw new ParsingException(INCOMPATIBLE_VAR_DECELERATION);
             }
             String type = var[METHODVARINDEXTYPE];
             String name = var[METHODVARINDEXNAME];
             if (matcher.matches()) {
                 for (Variables methodVar : finalVars) {
                     if (var[ONE].equals(methodVar.getName())) {
-                        throw new MyExceptions(EXISTING_VAR);
+                        throw new ParsingException(EXISTING_VAR);
                     }
 
                 }
@@ -240,14 +240,14 @@ public class Parser {
                 }
 
                 if (!isNameValid(var[METHODVARINDEXNAME])) {
-                    throw new MyExceptions(INVALID_NAME);
+                    throw new ParsingException(INVALID_NAME);
                 }
 
 
                 variable = new Variables(name, type, true, isFinal);
                 finalVars.add(variable);
             } else {
-                throw new MyExceptions(INCOMPATIBLE_VAR_DECELERATION);
+                throw new ParsingException(INCOMPATIBLE_VAR_DECELERATION);
             }
 
 
@@ -262,14 +262,14 @@ public class Parser {
      * @param varValue the name of the var
      * @param type     the type of the var
      * @return the exist var if exists
-     * @throws MyExceptions throws an exception if doesn't exist
+     * @throws ParsingException throws an exception if doesn't exist
      */
-    private Variables getExistingVar(ScopeC scope, String varValue, String type) throws MyExceptions {
+    private Variables getExistingVar(ScopeC scope, String varValue, String type) throws ParsingException {
         Variables existVar = scope.getVariable(varValue);
         if (existVar != null && existVar.getType().equals(type)) {
             return existVar;
         } else {
-            throw new MyExceptions(NO_EXISTING_VAR_INCOMPATIBLE_TYPE);
+            throw new ParsingException(NO_EXISTING_VAR_INCOMPATIBLE_TYPE);
         }
     }
 
@@ -280,9 +280,9 @@ public class Parser {
      * @param line  the variable line
      * @param scope the current scope
      * @return the vars list
-     * @throws MyExceptions
+     * @throws ParsingException
      */
-    protected ArrayList<Variables> parseVar(String line, ScopeC scope) throws MyExceptions {
+    protected ArrayList<Variables> parseVar(String line, ScopeC scope) throws ParsingException {
         ArrayList<Variables> vars = new ArrayList<>();
         String[] varLine = line.split(COMMA);
         boolean isInitialized = false;
@@ -316,7 +316,7 @@ public class Parser {
      * -     * @return Scope of the created method
      * -
      */
-    protected Method parseMethodDeceleration(String line, ScopeC scope) throws MyExceptions {
+    protected Method parseMethodDeceleration(String line, ScopeC scope) throws ParsingException {
         String methodVars = extractString(line, GET_INSIDE_PERENTLESS_INFO).trim();
         Pattern pattern;
         Matcher matcher;
@@ -325,7 +325,7 @@ public class Parser {
         matcher.find();
         String methodName = matcher.group(ONE);
         if (!isMethodNameValid(methodName) || scope.getFather() != null) {
-            throw new MyExceptions(INCOMPATIBLE_METHOD_NAME);
+            throw new ParsingException(INCOMPATIBLE_METHOD_NAME);
         }
         ArrayList<Variables> arguments = new ArrayList<>();
         if (!methodVars.equals(EMPTYSTRING)) {
@@ -340,9 +340,9 @@ public class Parser {
      * @param scope the current scope
      * @param line  the line of the method call
      * @return the updated method
-     * @throws MyExceptions if something is incompatible with the call and the original method
+     * @throws ParsingException if something is incompatible with the call and the original method
      */
-    protected Method parseMethodCall(ScopeC scope, String line) throws MyExceptions {
+    protected Method parseMethodCall(ScopeC scope, String line) throws ParsingException {
         String methodName = extractString(line, GET_METHOD_NAME_REGEX);
         methodName = methodName.trim();
         Method method = scope.getMethod(methodName);
@@ -354,7 +354,7 @@ public class Parser {
             methodArgArr = new String[ZERO];
         }
         if (methodArgArr.length != methodVar.size()) {
-            throw new MyExceptions(INCOMPATIBLE_NUMBER_OF_ARGS_TO_THE_METHOD);
+            throw new ParsingException(INCOMPATIBLE_NUMBER_OF_ARGS_TO_THE_METHOD);
         }
         for (int i = ZERO; i < methodArgArr.length; i++) {
             String input = methodArgArr[i];
@@ -366,7 +366,7 @@ public class Parser {
             } else {
                 Variables var = getExistingVar(scope, input, argType);
                 if (!var.getType().equals(argType) || !var.isInitialized()) {
-                    throw new MyExceptions(TYPEERROR);
+                    throw new ParsingException(TYPEERROR);
                 }
             }
         }
@@ -424,14 +424,14 @@ public class Parser {
      * @param scope         the current scope
      * @param vars          a list of the current variables
      * @return the updated variable list
-     * @throws MyExceptions if the data or the name is wrong
+     * @throws ParsingException if the data or the name is wrong
      */
 
     private Variables createVar(String[] line, boolean isInitialized, String type, Boolean isFinal, ScopeC scope,
-                                ArrayList<Variables> vars) throws MyExceptions {
+                                ArrayList<Variables> vars) throws ParsingException {
         String name = line[ZERO];
         if (line.length > PROPPERLENGTH) {
-            throw new MyExceptions(MORE_THAN_ONE_VALUE);
+            throw new ParsingException(MORE_THAN_ONE_VALUE);
         }
         String data = line[ONE];
         if (data != null) {
@@ -439,19 +439,19 @@ public class Parser {
             if (!isInitialized) {
                 isInitialized = CheckIfExistVar(line[ONE], type, scope);
                 if (!isInitialized) {
-                    throw new MyExceptions(ASSIGNING_WITH_NON_EXISTING_VARIABLE);
+                    throw new ParsingException(ASSIGNING_WITH_NON_EXISTING_VARIABLE);
                 }
             }
 
         }
         if (!isNameValid(name)){
-            throw new MyExceptions(INVALID_NAME);
+            throw new ParsingException(INVALID_NAME);
         }
         if (isThereAnotherVarIdentical(name, scope, vars)){
-            throw new MyExceptions(EXIST_VAR);
+            throw new ParsingException(EXIST_VAR);
         }
         if (isFinal && !isInitialized){
-            throw new MyExceptions(Final_Var_No_INITIALIZION);
+            throw new ParsingException(Final_Var_No_INITIALIZION);
         }
         Variables var = new Variables(name, type, isInitialized, isFinal);
         return var;
@@ -557,9 +557,9 @@ public class Parser {
      *
      * @param fullLine string of the java doc line
      * @return definition word of the line
-     * @throws MyExceptions in case the line is illegal
+     * @throws ParsingException in case the line is illegal
      */
-    protected String lineDefining(String fullLine) throws MyExceptions {
+    protected String lineDefining(String fullLine) throws ParsingException {
         for (String linePattern : pattenToDefDict.keySet()) {
             Pattern pattern = Pattern.compile(linePattern);
             Matcher matcher = pattern.matcher(fullLine);
@@ -568,7 +568,7 @@ public class Parser {
                 if (lineEnd(fullLine, lineDef)) {
                     return lineDef;
                 } else {
-                    throw new MyExceptions(INVALID_LINE); //todo exception handling
+                    throw new ParsingException(INVALID_LINE); //todo exception handling
                 }
             }
         }
@@ -623,14 +623,14 @@ public class Parser {
      * @param line  the line of the if\while definition
      * @param scope the current scope
      * @return אthe if\while scope
-     * @throws MyExceptions thrown if the condition isn't valid
+     * @throws ParsingException thrown if the condition isn't valid
      */
-    protected ScopeC ParesIfWhile(String line, ScopeC scope) throws MyExceptions {
+    protected ScopeC ParesIfWhile(String line, ScopeC scope) throws ParsingException {
         String conditions = extractString(line, GET_INSIDE_PERENTLESS_INFO);
         Pattern pattern = Pattern.compile(CONDITION_PATTEREN);
         Matcher matcher = pattern.matcher(conditions);
         if (matcher.find()) {
-            throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT); // todo exceptions
+            throw new ParsingException(INVALID_BOOLEAN_ARGUMENT); // todo exceptions
         }
         String[] conditionsArr = conditions.split(LOGICAL_OPERATORS);
         for (String condition : conditionsArr) {
@@ -647,24 +647,24 @@ public class Parser {
      * @param scopeC    the current scope
      * @param condition the condition to check
      * @return true iff the condition is valid
-     * @throws MyExceptions thrown if the condition isn't valid
+     * @throws ParsingException thrown if the condition isn't valid
      */
-    private boolean isConditionValid(ScopeC scopeC, String condition) throws MyExceptions {
+    private boolean isConditionValid(ScopeC scopeC, String condition) throws ParsingException {
         condition = condition.trim();
         Method method = scopeC.getScopesMethod();
         if (!(isConditionTextValid(condition, scopeC))) {
             Variables var = scopeC.getVariable(condition); // condition might be variable
             if (var == null) {
-                throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT);
+                throw new ParsingException(INVALID_BOOLEAN_ARGUMENT);
             }
 
             if (isaBooleanArgValid(var, method.isCalled(), method)) {
-                throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT);
+                throw new ParsingException(INVALID_BOOLEAN_ARGUMENT);
             }
             if (!method.isCalled() || isConditionTextValid(condition, scopeC)) {
                 return true;
             }
-            throw new MyExceptions(INVALID_BOOLEAN_ARGUMENT);
+            throw new ParsingException(INVALID_BOOLEAN_ARGUMENT);
         }
         return false;
     }

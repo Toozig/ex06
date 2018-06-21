@@ -1,7 +1,5 @@
 package oop.ex6;
 
-import jdk.nashorn.internal.runtime.Scope;
-
 import java.util.ArrayList;
 
 public class Method extends ScopeC {
@@ -12,7 +10,7 @@ public class Method extends ScopeC {
     private boolean isCalled;
     private boolean gotReturn;
 
-    public Method(ScopeC father, ArrayList<Variables> arguments, String name) throws MyExceptions {
+    public Method(ScopeC father, ArrayList<Variables> arguments, String name) throws ParsingException {
         super(father);
         this.name = name;
         this.isCalled = false;
@@ -37,7 +35,7 @@ public class Method extends ScopeC {
     }
 
     // checks if the method variable ar valid
-    private ArrayList<Variables> isLegalVar(ArrayList<Variables> varList) throws MyExceptions {
+    private ArrayList<Variables> isLegalVar(ArrayList<Variables> varList) throws ParsingException {
         for (Variables variable: varList) {
             this.addVariable(variable);
         }
@@ -56,7 +54,7 @@ public class Method extends ScopeC {
         return name;
     }
 
-    protected void runMethod(ScopeC scopeC) throws MyExceptions {
+    protected void runMethod(ScopeC scopeC) throws ParsingException {
         ScopeC father = this.getFather();
         if(scopeC == this) {
             return;

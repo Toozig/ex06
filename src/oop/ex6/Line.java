@@ -8,7 +8,7 @@ public class Line {
         typeFactory = TypeFactory.valueOf(commandType);
 
     }
-    protected ScopeC interperate (ScopeC scope) throws MyExceptions {
+    protected ScopeC interperate (ScopeC scope) throws ParsingException {
         return typeFactory.interpret(scope,commandline);
     }
 

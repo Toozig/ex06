@@ -74,7 +74,7 @@ public class ScopeC {
         return false;
     }
 
-    protected Method getMethod(String methodName) throws MyExceptions {
+    protected Method getMethod(String methodName) throws ParsingException {
         ScopeC globalScope = this;
         while (globalScope.getFather() != null) {
             globalScope = globalScope.getFather();
@@ -86,7 +86,7 @@ public class ScopeC {
             }
 
         }
-        throw new MyExceptions(INVALID_LINE);
+        throw new ParsingException(INVALID_LINE);
     }
 
     public void setFather(ScopeC father) {

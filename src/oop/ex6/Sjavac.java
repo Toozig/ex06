@@ -2,10 +2,10 @@ package oop.ex6;
 
 
 import java.io.IOException;
-import java.util.List;
+
 public class Sjavac {
 
-    public static final String DOESN_T_EXIST = "Doesn't exist";
+    public static final String DOES_T_EXIST = "Doesn't exist";
 
     public static void main(String[] args) {
         ScopeC curScope ;
@@ -14,12 +14,12 @@ public class Sjavac {
         }
         catch (IOException e){
             System.out.println("2");
-            System.err.println(e.getMessage() + " " +DOESN_T_EXIST);
+            System.err.println(e.getMessage() + " " + DOES_T_EXIST);
             return;
         }
-        catch (MyExceptions myExceptions) {
+        catch (ParsingException parsingException) {
             System.out.println("1");
-            System.err.println(myExceptions.getMessage());
+            System.err.println(parsingException.getMessage());
             return;
         }
         for (Method method : curScope.getMethodArr()) {
@@ -27,9 +27,9 @@ public class Sjavac {
             for (Line line : method.getScopeLines()) {
                 try {
                     curScope = line.interperate(curScope);
-                } catch (MyExceptions myExceptions) {
+                } catch (ParsingException parsingException) {
                     System.out.println("1");
-                    System.err.println(myExceptions.getMessage());
+                    System.err.println(parsingException.getMessage());
                     return;
                 }
             }
