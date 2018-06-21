@@ -53,6 +53,7 @@ public class Parser {
             LOGICAL_OPERATORS + "\\s*" + LOGICAL_OPERATORS + "|" + LOGICAL_OPERATORS + "\\s*$";
     final private static String BOOLEAN_EXP = "((-?\\d)+(\\.\\d+)?)|(s*((true)|(false))\\s*)";
     final static private String Names = "\\s*((([a-z]|[A-Z])+)\\w*)|(_+([a-z]|[A-Z]|\\d)+)";
+    final static private String MethodNames = "\\s*(([a-z]|[A-Z])+)(_|([a-z]|[A-Z]|\\d))*";
     final static private String EQUALS = "=";
     final static private String EMPTYSTRING = "";
     final static private String METHOD_VARS = "(\\s*((final\\s+)?(int|boolean|double|String|char))" + WHITE_SPACE +
@@ -250,7 +251,7 @@ public class Parser {
         matcher = pattern.matcher(line);
         matcher.find();
         String methodName = matcher.group(1);
-        if (!isNameValid(methodName) || scope.getFather() != null) {
+        if (!isMethodNameValid(methodName) || scope.getFather() != null) {
             throw new MyExceptions(INCOMPATIBLE_METHOD_NAME); //todo exceptions
         }
         ArrayList<Variables> arguments = new ArrayList<>();
@@ -310,9 +311,19 @@ public class Parser {
         return matcher.matches();
     }
 
+    private boolean isMethodNameValid(String name) {
+        name.replace(Parser.WHITE_SPACE, EMPTYSTRING);
+        Pattern pattern = Pattern.compile(MethodNames);
+        Matcher matcher = pattern.matcher(name);
+        return matcher.matches();
+    }
+
 
     private Variables createVar(String[] line, boolean isInitialized, String type, Boolean isFinal, ScopeC scope, ArrayList<Variables> vars) throws NumberFormatException, MyExceptions {
         String name = line[0];
+        if(line.length>2){
+            throw new MyExceptions("More than one value");
+        }
         switch (line.length) {
             case 2:
                 isInitialized = isTypeMatch(line[1], type);
