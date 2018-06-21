@@ -1,7 +1,6 @@
 package oop.ex6;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class ScopeC {
 
@@ -16,7 +15,7 @@ public class ScopeC {
         this.methodArr.add(method);
     }
 
-    public ScopeC(ScopeC father){
+    public ScopeC(ScopeC father) {
         varArray = new ArrayList<>();
         this.father = father;
         this.innerScopeArr = new ArrayList<>();
@@ -32,7 +31,8 @@ public class ScopeC {
     public ScopeC getFather() {
         return father;
     }
-    public ArrayList<Variables> getVarArray(){
+
+    public ArrayList<Variables> getVarArray() {
 
         return varArray;
     }
@@ -49,32 +49,39 @@ public class ScopeC {
         this.scopeLines = scopeLines;
     }
 
-    public Variables getVariable(String variable){
-        for (Variables var: varArray) {
-            if(var.getName().equals(variable)){
+    public Variables getVariable(String variable) {
+        for (Variables var : varArray) {
+            if (var.getName().equals(variable)) {
                 return var;
             }
         }
-        if(father == null){
+        if (father == null) {
             return null;
-            }
-        else {
+        } else {
             return father.getVariable(variable);
         }
     }
+
     // todo
-    protected boolean isArgValid(){
+    protected boolean isVarInTheGlobalScope(Variables var) {
+        ScopeC curScope = this;
+        while (curScope.father != null) {
+            curScope = curScope.father;
+        }
+        if (curScope.getVarArray().contains(var)) {
+            return true;
+        }
         return false;
     }
 
     protected Method getMethod(String methodName) throws MyExceptions {
         ScopeC globalScope = this;
-        while(globalScope.getFather()!=null){
-            globalScope=globalScope.getFather();
+        while (globalScope.getFather() != null) {
+            globalScope = globalScope.getFather();
         }
         for (Method method :
                 globalScope.getMethodArr()) {
-            if(method.getName().equals(methodName)){
+            if (method.getName().equals(methodName)) {
                 return method;
             }
 
@@ -86,18 +93,18 @@ public class ScopeC {
         this.father = father;
     }
 
-    protected void addVariable(Variables var){
+    protected void addVariable(Variables var) {
         varArray.add(var);
     }
 
-    protected void addInnerScope(ScopeC innerScopeC){
+    protected void addInnerScope(ScopeC innerScopeC) {
 
         innerScopeArr.add(innerScopeC);
     }
 
     // Gets the method in which a inner scope is indise s
-     Method getScopesMethod(){
-        if(father.getFather() == null){
+    Method getScopesMethod() {
+        if (father.getFather() == null) {
             return (Method) this;
         }
         return father.getScopesMethod();
