@@ -11,11 +11,12 @@ import java.util.regex.Pattern;
 
 import static java.nio.file.Paths.get;
 
+/**
+ * Parses the lines in the file and checks it's validity
+ */
 public class Parser {
-
+    //Constants
     final static private String INVALID_NAME = "Invalid name";
-    final static private String FALSE = "false";
-    final static private String TRUE = "true";
     final static private String GET_METHOD_NAME_REGEX = "\\s*(.*)\\s*\\(";
     final static private String VARIABLE = "Variable";
     final static private String METHOD_DECLARE = "MethodDeclare";
@@ -27,11 +28,6 @@ public class Parser {
     final static private String METHOD_CALL = "MethodCall";
     final static private String RETURN = "Return";
     final static private String LINE_ERROR = "lineError";
-    final static private String INDENTATION = "    ";
-    final static private String NO_CHAR_BEFORE = "^";
-    final static private int OUTER_SCOPE = 0;
-    final static private int FIRST_LINE = 0;
-    final static private int CATALAN = 1;
     final static private String WHITE_SPACE = "\\s+";
     final static private String FINAL = "final";
     final static private int FIRST_VAR_DECLARE = 0;
@@ -40,12 +36,10 @@ public class Parser {
     final static private String BOOLEAN = "boolean";
     final static private String CHAR = "char";
     final static private String STRING = "String";
-    final static private String INCOMPATIBLE_TYPE = "incompatibleType";
     final static private String EmptyLine = "\\s*";
     final static private String EMPTY_LINE = "Emptyline";
     final static private String END_STATEMENT = ";";
     final static private String SCOPE_OPENING = "{";
-    final static private String INSIDE_PARRENTESS = "\\((.*?)\\)\\s*\\{" + "\\s*";
     final static private String GET_INSIDE_PERENTLESS_INFO = "\\((.*?)\\)\\s*(\\{|\\;)\\s*";
     final static private String METHOD_NAME = "\\s*void\\s*(.*?)\\s*\\(\\s*";
     final static private String LOGICAL_OPERATORS = "(\\|\\||&&)";
@@ -58,7 +52,6 @@ public class Parser {
     final static private String EMPTYSTRING = "";
     final static private String METHOD_VARS = "(\\s*((final\\s+)?(int|boolean|double|String|char))" + WHITE_SPACE +
             Names + ")\\s*";
-    final static private String VariableDeceleration = "\\s*((final\\s+)?(int|boolean|double|String|char))";
     final static private String MethodDeceleration = "^\\s*void\\s+\\S+\\s*\\(.*\\)\\s*\\{\\s*";
     final static private String MethodCall = "^\\s*\\S*\\s*\\(.*\\)\\s*;\\s*";
     final static private String VariableAssignment = "^\\s*\\S+\\s*=\\s*.+\\s*.*;\\s*";
@@ -66,10 +59,10 @@ public class Parser {
     final static private String returnVar = "\\s*return\\s*;\\s*";
     final static private String ScopeClosing = "\\s*}\\s*";
     final static private String Note = "^\\/\\/.*";
-    final static private String VariableCreation = "^\\s*(final)?\\s*(final\\s+)?(int|boolean|double|String|char)\\s+([^\\s+]+\\s*)+;\\s*";
+    final static private String VariableCreation = "^\\s*(final)?\\s*(final\\s+)?(int|boolean|double|String|char)\\s+(" +
+            "[^\\s+]+\\s*)+;\\s*";
     final static private String INVALID_BOOLEAN_ARGUMENT = "Invalid boolean argument";
     final static private String CONDITIONVALIDTYPES = BOOLEAN + "|" + INT + "|" + DOUBLE;
-    final static private String INVALID_FILE = "Invalid sJava file";
     final static private String INVALID_LINE = "Invalid line format";
     final static private String EXIST_VAR = "There's another variable with the same name";
     final static private String Final_Var_No_INITIALIZION = "Final Var must be initialize";
@@ -82,26 +75,30 @@ public class Parser {
     final static private String NO_EXISTING_VAR_INCOMPATIBLE_TYPE = "No existing var,incompatible type";
     final static private String EXISTING_VAR = "Existing var with the same name";
     final static private String ERROR_UN_INITIALIZED_VARIABLE = "ERROR: unInitialized variable";
+    final static private int ZERO = 0;
     final static private int ONE = 1;
     final static private int NAMEINDEX = 0;
     final static private int VALUEINDEX = 1;
     final static private int PROPPERLENGTH = 2;
     final static private int METHODVARINDEXNAME = 1;
     final static private int METHODVARINDEXTYPE = 0;
-    final static private int ZERO = 0;
-    final static private String DOUBLEQUATATION = "\'";
-    final static private String SINGLEQUATATION = "\"";
-    final static private int NOTCHAR = 3;
     final static private String MORE_THAN_ONE_VALUE = "More than one value";
     final static private String SINGLEWHITESPACE = " ";
     final static private String RECOGNIZE_INT_REGEX = "\\s*\\-?\\d+\\s*";
     final static private String RECOGNIZE_STRING_REGEX = "\\s*\\\".*\\\"\\s*";
     final static private String CHAR_REGEX_RECOGNIZE = "\\s*\\'.\\'\\s*";
     final static private String DOUBLE_REGEX_RECOGNIZER = "\\s*\\-?\\d+(\\.\\d+)?\\s*";
-    public static final String INVALID_LINE_OF_VAR_CREATION = "Invalid line of var creation";
-    public static final int VALUE = 3;
-    public static final int ARGUMENT = 1;
-    public static final String ASSIGNINGREGEX = "([A-Za-z0-9_]*)\\s*(=\\s*(([A-Za-z0-9_.-]+)|(\".*\")|('.')))?\\s*";
+    final static private String INVALID_LINE_OF_VAR_CREATION = "Invalid line of var creation";
+    final static private int VALUE = 3;
+    final static private int ARGUMENT = 1;
+    final static private String ASSIGNINGREGEX = "([A-Za-z0-9_]*)\\s*(=\\s*(([A-Za-z0-9_.-]+)|(\".*\")|('.')))?\\s*";
+    final static private int DATAINDEX = 1;
+    final static private int NUMOFARGSIFFINAL = 3;
+    final static private int FINALINDEX = 0;
+    final static private int TYPEINDEXIFFINAL = 1;
+    final static private int NAMEINDEXIFFINAL = 2;
+    final static private int MINIMALNUMOFARGS = 2;
+    //Attributes
     private List<String> javaDoc;
     private static HashMap<String, String> pattenToDefDict;
     private static HashMap<String, String> varTypeDict;
@@ -113,8 +110,8 @@ public class Parser {
      * @param sJavaFilePath simplified java document
      * @throws ParsingException in case file is not legal txt document.
      */
-    public Parser(String sJavaFilePath) throws ParsingException, IOException {
-        javaDoc = convertToStringArr(sJavaFilePath);
+    Parser(String sJavaFilePath) throws ParsingException, IOException {
+        javaDoc = Facade.convertToStringArr(sJavaFilePath);
     }
 
 
@@ -123,7 +120,7 @@ public class Parser {
      *
      * @throws ParsingException in case file is not legal txt document.
      */
-    public Parser() {
+    Parser() {
         javaDoc = null;
     }
 
@@ -149,7 +146,13 @@ public class Parser {
         varTypeDict = varTypeDic;
     }
 
-    private String[] singelVarArrCreator(String expression) throws ParsingException {
+    /**
+     * Parses single var argument - assignment or creation
+     * @param expression the expression to parse
+     * @return String list in which the first index is the name of the var and the second index there's the value
+     * @throws ParsingException thrown if the line is invalid
+     */
+    private String[] singleVarArrCreator(String expression) throws ParsingException {
         expression = expression.trim();
         String ptrn = ASSIGNINGREGEX;
         Pattern pattern = Pattern.compile(ptrn);
@@ -178,7 +181,8 @@ public class Parser {
             boolean isVarInTheGlobalScope = scope.isVarInTheGlobalScope(curVariable);
             if (curVariable != null && (!(curVariable.getIsFinal()))) {
                 if (isVarInTheGlobalScope && scope.getFather() != null) {
-                    Variables variableCopy = new Variables(curVariable.getName(), curVariable.getType(), true,
+                    Variables variableCopy = new Variables(curVariable.getName(), curVariable.getType(),
+                            true,
                             curVariable.getIsFinal());
                     scope.addVariable(variableCopy);
                 }
@@ -221,7 +225,7 @@ public class Parser {
             boolean isFinal = false;
             matcher = pattern.matcher(item);
             String[] var = item.trim().split(WHITE_SPACE);
-            if (var.length >3||var.length<2) {
+            if (var.length >NUMOFARGSIFFINAL||var.length< MINIMALNUMOFARGS) {
                 throw new ParsingException(INCOMPATIBLE_VAR_DECELERATION);
             }
             String type = var[METHODVARINDEXTYPE];
@@ -233,10 +237,10 @@ public class Parser {
                     }
 
                 }
-                if(var.length==3){
-                    isFinal = var[0].equals(FINAL);
-                    type = var[1];
-                    name = var[2];
+                if(var.length== NUMOFARGSIFFINAL){
+                    isFinal = var[FINALINDEX].equals(FINAL);
+                    type = var[TYPEINDEXIFFINAL];
+                    name = var[NAMEINDEXIFFINAL];
                 }
 
                 if (!isNameValid(var[METHODVARINDEXNAME])) {
@@ -280,7 +284,7 @@ public class Parser {
      * @param line  the variable line
      * @param scope the current scope
      * @return the vars list
-     * @throws ParsingException
+     * @throws ParsingException thrown if something in the var deceleration or assignment was wrong
      */
     protected ArrayList<Variables> parseVar(String line, ScopeC scope) throws ParsingException {
         ArrayList<Variables> vars = new ArrayList<>();
@@ -291,15 +295,15 @@ public class Parser {
         varLine[FIRST_VAR_DECLARE] = varLine[FIRST_VAR_DECLARE].replace(FINAL, EMPTYSTRING).trim();
         String type = extractType(varLine[FIRST_VAR_DECLARE]);
         varLine[FIRST_VAR_DECLARE] = varLine[FIRST_VAR_DECLARE].replace(type, EMPTYSTRING).trim();
-        String[] variableString = singelVarArrCreator(varLine[FIRST_VAR_DECLARE]);
-        if (variableString[1] != null) {
+        String[] variableString = singleVarArrCreator(varLine[FIRST_VAR_DECLARE]);
+        if (variableString[DATAINDEX] != null) {
             isInitialized = true;
 
         }
         String[] finalLst = trimStringLst(variableString);
         vars.add(createVar(finalLst, isInitialized, type, isFinal, scope, vars));
         for (int i = ONE; i < varLine.length; i++) {
-            finalLst = singelVarArrCreator(varLine[i]);
+            finalLst = singleVarArrCreator(varLine[i]);
             isInitialized = false;
             vars.add(createVar(finalLst, isInitialized, type, isFinal, scope, vars));
 
@@ -310,11 +314,11 @@ public class Parser {
 
 
     /**
-     * -     * This method  turns a method deceleration into a scope repressing the method
-     * -     * @param line the line in the java file which declare the method
-     * -     * @param scope Scope of the current scope
-     * -     * @return Scope of the created method
-     * -
+     * This method  turns a method deceleration into a scope repressing the method
+     * @param line the line in the java file which declare the method
+     * @param scope Scope of the current scope
+     * @return return Scope of the created method
+     * @throws ParsingException if something in the method deceleration was illegal
      */
     protected Method parseMethodDeceleration(String line, ScopeC scope) throws ParsingException {
         String methodVars = extractString(line, GET_INSIDE_PERENTLESS_INFO).trim();
@@ -408,7 +412,7 @@ public class Parser {
      * @return true iff the methid name valid
      */
     private boolean isMethodNameValid(String name) {
-        name.replace(Parser.WHITE_SPACE, EMPTYSTRING);
+        name = name.replace(Parser.WHITE_SPACE, EMPTYSTRING);
         Pattern pattern = Pattern.compile(MethodNames);
         Matcher matcher = pattern.matcher(name);
         return matcher.matches();
@@ -575,15 +579,6 @@ public class Parser {
         return LINE_ERROR;
     }
 
-    /**
-     * This method takes a text file and turns it into an array of String, each index contains line from the txt
-     *
-     * @return Array of Strings.
-     */
-    protected List<String> convertToStringArr(String path) throws IOException {
-        Path filePath = get(path);
-        return Files.readAllLines(filePath);
-    }
 
     /**
      * Gets the javadoc
@@ -622,15 +617,15 @@ public class Parser {
      *
      * @param line  the line of the if\while definition
      * @param scope the current scope
-     * @return אthe if\while scope
+     * @return the if while scope
      * @throws ParsingException thrown if the condition isn't valid
      */
-    protected ScopeC ParesIfWhile(String line, ScopeC scope) throws ParsingException {
+    protected ScopeC ParseIfWhile(String line, ScopeC scope) throws ParsingException {
         String conditions = extractString(line, GET_INSIDE_PERENTLESS_INFO);
         Pattern pattern = Pattern.compile(CONDITION_PATTEREN);
         Matcher matcher = pattern.matcher(conditions);
         if (matcher.find()) {
-            throw new ParsingException(INVALID_BOOLEAN_ARGUMENT); // todo exceptions
+            throw new ParsingException(INVALID_BOOLEAN_ARGUMENT);
         }
         String[] conditionsArr = conditions.split(LOGICAL_OPERATORS);
         for (String condition : conditionsArr) {
@@ -709,12 +704,9 @@ public class Parser {
         String type = var.getType();
         pattern = Pattern.compile(CONDITIONVALIDTYPES);
         matcher = pattern.matcher(type);
-        if (var.isInitialized() && (matcher.matches())) {
-            return true;
-        }
+        return var.isInitialized() && (matcher.matches());
 
 
-        return false;
     }
 
     /**
@@ -724,7 +716,7 @@ public class Parser {
      * @param type      the type to check
      * @return true iff matches
      */
-    public boolean isTypeMatch(String chekedVar, String type) {
+    boolean isTypeMatch(String chekedVar, String type) {
         Pattern pattern = Pattern.compile(varTypeDict.get(type));
         Matcher matcher = pattern.matcher(chekedVar);
         return matcher.matches();

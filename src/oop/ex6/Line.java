@@ -1,14 +1,30 @@
 package oop.ex6;
 
+/**
+ * Represents a line in the sjava file
+ */
 public class Line {
-    protected TypeFactory typeFactory;
-    protected String commandline;
-    public Line(String commandline,String commandType){
+    private TypeFactory typeFactory;
+    private String commandline;
+
+    /**
+     * Constructs a line
+     * @param commandline the command of the line
+     * @param commandType the type of the line
+     */
+    Line(String commandline,String commandType){
         this.commandline = commandline;
         typeFactory = TypeFactory.valueOf(commandType);
 
     }
-    protected ScopeC interperate (ScopeC scope) throws ParsingException {
+
+    /**
+     * Interpret's the line
+     * @param scope the scope the line is in
+     * @return the scope that the typeFactory returned with the updated scope
+     * @throws ParsingException if the line was illegal
+     */
+    protected ScopeC interpret(ScopeC scope) throws ParsingException {
         return typeFactory.interpret(scope,commandline);
     }
 
