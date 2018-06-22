@@ -12,7 +12,7 @@ import static java.nio.file.Paths.get;
  */
 public class Facade {
     //constants
-    private static final int SCOPE_OPEN_PARENTTESSES = 1;
+    private static final int SCOPE_OPEN_PARENTHESES = 1;
     private static final String METHOD_INSIDE_A_METHOD = "Method inside a method";
     private static final String IF_WHILE_BLOCK = "IfWhileBlock";
     private static final String METHOD_DECLARE = "MethodDeclare";
@@ -23,9 +23,9 @@ public class Facade {
     private static final String NO_RETURN_IN_METHOD_ERROR = "No return in method";
     private static final String NOT_ENOUGH_CLOSING_BRACKETS = "Not enough closing brackets";
     private static final String NOTE = "Note";
-    private static final int INDEXSTART = 1;
-    public static final int METHODCLOSED = 0;
-    public static final int ZERO = 0;
+    private static final int INDEX_START = 1;
+    private static final int METHOD_CLOSED = 0;
+    private static final int ZERO = 0;
 
     /**
      * Creates a method object according to given lines
@@ -36,12 +36,13 @@ public class Facade {
      * @return the method object
      * @throws ParsingException thrown if something in the method lines were illegal
      */
-    static Method createMethod(List<String> javadoc, int index, Line line, ScopeC globalScope) throws ParsingException {
+    private static Method createMethod(List<String> javadoc, int index, Line line,
+                                       ScopeC globalScope) throws ParsingException {
         Method method = (Method) line.interpret(globalScope);
-        int scopeOpen = SCOPE_OPEN_PARENTTESSES;
+        int scopeOpen = SCOPE_OPEN_PARENTHESES;
         Parser parser = new Parser();
 
-        for (int i = index + INDEXSTART; i < javadoc.size(); i++) {
+        for (int i = index + INDEX_START; i < javadoc.size(); i++) {
             String commandLine = javadoc.get(i);
             String lineType = parser.lineDefining(commandLine);
             Line methodLine = new Line(commandLine, lineType);
@@ -50,7 +51,7 @@ public class Facade {
             }
             switch (lineType) {
                 case RETURN:
-                    if (scopeOpen == SCOPE_OPEN_PARENTTESSES) {
+                    if (scopeOpen == SCOPE_OPEN_PARENTHESES) {
                         method.setGotReturn(true);
                     }
                     break;
@@ -65,7 +66,7 @@ public class Facade {
             }
 
             method.addScopeLines(methodLine);
-            if (scopeOpen == METHODCLOSED) {
+            if (scopeOpen == METHOD_CLOSED) {
                 if (!method.GotReturn()) {
                     throw new ParsingException(NO_RETURN_IN_METHOD_ERROR);
                 }
@@ -81,7 +82,7 @@ public class Facade {
      * @param lineType the type of the line
      * @return true iff the method wasn't finished
      */
-    static boolean MethodNotFinished(Method method, String lineType) {
+    private static boolean MethodNotFinished(Method method, String lineType) {
         return method.GotReturn() && (!lineType.equals(RETURN) && !lineType.equals(NOTE) && !lineType.equals
                 (SCOPE_CLOSING));
     }
@@ -94,7 +95,7 @@ public class Facade {
      * @param lineType the type of the line
      * @return true iff this is not a permitted line in the global scope
      */
-    static boolean isNotValidGlobalLine(String lineType) {
+    private static boolean isNotValidGlobalLine(String lineType) {
         return lineType.equals(IF_WHILE_BLOCK) || lineType.equals(RETURN) || lineType.equals(SCOPE_CLOSING)
                 || lineType.equals(METHOD_CALL);
     }
@@ -104,29 +105,37 @@ public class Facade {
 
     /**
      * Creates the global scope of the file
-     * @param filePath the path of the file
+     * @param file the file in form of List of string
      * @return the global scope
      * @throws ParsingException if one of the lines was illegal
-     * @throws IOException if no such file exists
      */
-    static ScopeC globalScopeCreator(String filePath) throws ParsingException, IOException {
+     static Boolean isSjavaFileValid(List<String> file) throws ParsingException{
         ScopeC curScope = new ScopeC(null);
-        Parser parser = new Parser(filePath);
-        List<String> javadoc = parser.getJavaDoc();
-        for (int i = ZERO; i < javadoc.size(); i++) {
-            String commandLine = javadoc.get(i);
+        Parser parser = new Parser();
+         for (int i = ZERO; i < file.size(); i++) {
+            String commandLine = file.get(i);
             String lineType = parser.lineDefining(commandLine);
             Line line = new Line(commandLine, lineType);
             if (isNotValidGlobalLine(lineType)) {
                 throw new ParsingException(INVALID_IN_THE_OUTER_SCOPE);
             }
             if (lineType.equals(METHOD_DECLARE)) {
-                Method method = createMethod(javadoc, i, line, curScope);
+                Method method = createMethod(file, i, line, curScope);
                 i = i + method.getScopeLines().size();
             }
             line.interpret(curScope);
         }
-        return curScope;
+        return areMethodsValid(curScope);
+    }
+
+    private static boolean areMethodsValid(ScopeC curScope) throws ParsingException {
+        for (Method method : curScope.getMethodArr()) {
+            curScope = method;
+            for (Line line : method.getScopeLines()) {
+                curScope = line.interpret(curScope);
+            }
+        }
+        return true;
     }
 
 
@@ -136,7 +145,7 @@ public class Facade {
      * @return Array of Strings
      * @throws IOException thrown if the file doesn't exist
      */
-    protected static List<String> convertToStringArr(String path) throws IOException {
+     static List<String> convertToStringArr(String path) throws IOException {
         Path filePath = get(path);
         return Files.readAllLines(filePath);
     }

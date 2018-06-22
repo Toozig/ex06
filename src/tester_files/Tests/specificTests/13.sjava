@@ -1,2 +1,9 @@
-//uses tabs, not spaces
-int	a	=	3;
+//call to method with a final variable
+void foo(final int a) {
+    foo(6);
+    int b = 3;
+    foo(b);
+    final int c = b;
+    foo(c);
+	return;
+}

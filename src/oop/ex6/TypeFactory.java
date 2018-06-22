@@ -32,8 +32,7 @@ public enum TypeFactory {
     },
     IfWhileBlock{
         protected ScopeC interpret(ScopeC scopeC, String command) throws ParsingException {
-            ScopeC innerScope = parser.ParseIfWhile(command, scopeC);
-            return innerScope;
+            return parser.ParseIfWhile(command, scopeC);
 
         }
 
@@ -64,20 +63,19 @@ public enum TypeFactory {
         }
     },
     Return {
-        protected ScopeC interpret(ScopeC scopeC, String command) throws ParsingException {
+        protected ScopeC interpret(ScopeC scopeC, String command) {
             return scopeC;
         }
     },
     Note{
-        protected ScopeC interpret(ScopeC scopeC, String command) throws ParsingException {
+        protected ScopeC interpret(ScopeC scopeC, String command) {
             return scopeC;
         }
     },
     Emptyline{
-        protected ScopeC interpret(ScopeC scopeC, String command) throws ParsingException {
+        protected ScopeC interpret(ScopeC scopeC, String command) {
             return scopeC;
         }
-
     };
 
     public static final String OUTER_SCOPE_CLOSE = "Outer scope shouldn't be close";

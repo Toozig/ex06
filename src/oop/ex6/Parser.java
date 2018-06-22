@@ -1,15 +1,12 @@
 package oop.ex6;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.nio.file.Paths.get;
 
 /**
  * Parses the lines in the file and checks it's validity
@@ -106,23 +103,12 @@ public class Parser {
 
     /**
      * constructor of the parser class
-     *
-     * @param sJavaFilePath simplified java document
-     * @throws ParsingException in case file is not legal txt document.
-     */
-    Parser(String sJavaFilePath) throws ParsingException, IOException {
-        javaDoc = Facade.convertToStringArr(sJavaFilePath);
-    }
-
-
-    /**
-     * constructor of the parser class
-     *
-     * @throws ParsingException in case file is not legal txt document.
      */
     Parser() {
         javaDoc = null;
     }
+
+    public static final String VALID_BOOLEAN_REGEX_EXP = "(\\s*\\-?\\d+(\\.\\d+)?\\s*)|(\\s*((true)|(false))\\s*)";
 
     //creates dictionary of pattens and their meaning
     static {
@@ -142,7 +128,7 @@ public class Parser {
         varTypeDic.put(STRING, RECOGNIZE_STRING_REGEX);
         varTypeDic.put(CHAR, CHAR_REGEX_RECOGNIZE);
         varTypeDic.put(DOUBLE, DOUBLE_REGEX_RECOGNIZER);
-        varTypeDic.put(BOOLEAN, ("(\\s*\\-?\\d+(\\.\\d+)?\\s*)|(\\s*((true)|(false))\\s*)"));
+        varTypeDic.put(BOOLEAN, VALID_BOOLEAN_REGEX_EXP);
         varTypeDict = varTypeDic;
     }
 
@@ -154,8 +140,7 @@ public class Parser {
      */
     private String[] singleVarArrCreator(String expression) throws ParsingException {
         expression = expression.trim();
-        String ptrn = ASSIGNINGREGEX;
-        Pattern pattern = Pattern.compile(ptrn);
+        Pattern pattern = Pattern.compile(ASSIGNINGREGEX);
         Matcher matcher = pattern.matcher(expression);
         if (!matcher.matches()) {
             throw new ParsingException(INVALID_LINE_OF_VAR_CREATION);
@@ -170,7 +155,7 @@ public class Parser {
      * @param scope the current scope
      * @throws ParsingException thrown if assigning isn't legal
      */
-    protected void assignVar(String line, ScopeC scope) throws ParsingException {
+     void assignVar(String line, ScopeC scope) throws ParsingException {
         String[] varLine = line.split(COMMA);
         varLine[varLine.length - ONE] = varLine[varLine.length - ONE].replace(END_STATEMENT, EMPTYSTRING);
         for (String var : varLine) {
@@ -189,7 +174,6 @@ public class Parser {
                 boolean isTypeMatched = isTypeMatch(varValue, curVariable.getType());
                 if (!isTypeMatched) {
                     Variables existVar = getExistingVar(scope, varValue, curVariable.getType());
-                    Method method = (Method) scope;
                     if (!existVar.isInitialized()) {
                         throw new ParsingException(ERROR_UN_INITIALIZED_VARIABLE);
                     }
@@ -214,7 +198,7 @@ public class Parser {
      * @return list with the vars
      * @throws ParsingException thrown if the vars doesn't match the method deceleration
      */
-    protected ArrayList<Variables> parseVarsFromMethod(String vars) throws ParsingException {
+    private ArrayList<Variables> parseVarsFromMethod(String vars) throws ParsingException {
         ArrayList<Variables> finalVars = new ArrayList<>();
         String[] variables = vars.split(COMMA);
         Variables variable;
@@ -243,7 +227,7 @@ public class Parser {
                     name = var[NAMEINDEXIFFINAL];
                 }
 
-                if (!isNameValid(var[METHODVARINDEXNAME])) {
+                if (isNameNotValid(var[METHODVARINDEXNAME])) {
                     throw new ParsingException(INVALID_NAME);
                 }
 
@@ -286,7 +270,7 @@ public class Parser {
      * @return the vars list
      * @throws ParsingException thrown if something in the var deceleration or assignment was wrong
      */
-    protected ArrayList<Variables> parseVar(String line, ScopeC scope) throws ParsingException {
+    ArrayList<Variables> parseVar(String line, ScopeC scope) throws ParsingException {
         ArrayList<Variables> vars = new ArrayList<>();
         String[] varLine = line.split(COMMA);
         boolean isInitialized = false;
@@ -304,8 +288,7 @@ public class Parser {
         vars.add(createVar(finalLst, isInitialized, type, isFinal, scope, vars));
         for (int i = ONE; i < varLine.length; i++) {
             finalLst = singleVarArrCreator(varLine[i]);
-            isInitialized = false;
-            vars.add(createVar(finalLst, isInitialized, type, isFinal, scope, vars));
+            vars.add(createVar(finalLst, false, type, isFinal, scope, vars));
 
 
         }
@@ -320,7 +303,7 @@ public class Parser {
      * @return return Scope of the created method
      * @throws ParsingException if something in the method deceleration was illegal
      */
-    protected Method parseMethodDeceleration(String line, ScopeC scope) throws ParsingException {
+    Method parseMethodDeceleration(String line, ScopeC scope) throws ParsingException {
         String methodVars = extractString(line, GET_INSIDE_PERENTLESS_INFO).trim();
         Pattern pattern;
         Matcher matcher;
@@ -346,7 +329,7 @@ public class Parser {
      * @return the updated method
      * @throws ParsingException if something is incompatible with the call and the original method
      */
-    protected Method parseMethodCall(ScopeC scope, String line) throws ParsingException {
+    Method parseMethodCall(ScopeC scope, String line) throws ParsingException {
         String methodName = extractString(line, GET_METHOD_NAME_REGEX);
         methodName = methodName.trim();
         Method method = scope.getMethod(methodName);
@@ -398,11 +381,11 @@ public class Parser {
      * @param name the name to check
      * @return true iff the name is valid
      */
-    private boolean isNameValid(String name) {
+    private boolean isNameNotValid(String name) {
         name.replace(Parser.WHITE_SPACE, EMPTYSTRING);
         Pattern pattern = Pattern.compile(Names);
         Matcher matcher = pattern.matcher(name);
-        return matcher.matches();
+        return !matcher.matches();
     }
 
     /**
@@ -448,7 +431,7 @@ public class Parser {
             }
 
         }
-        if (!isNameValid(name)){
+        if (isNameNotValid(name)){
             throw new ParsingException(INVALID_NAME);
         }
         if (isThereAnotherVarIdentical(name, scope, vars)){
@@ -457,8 +440,7 @@ public class Parser {
         if (isFinal && !isInitialized){
             throw new ParsingException(Final_Var_No_INITIALIZION);
         }
-        Variables var = new Variables(name, type, isInitialized, isFinal);
-        return var;
+        return new Variables(name, type, isInitialized, isFinal);
     }
 
     /**
@@ -563,7 +545,7 @@ public class Parser {
      * @return definition word of the line
      * @throws ParsingException in case the line is illegal
      */
-    protected String lineDefining(String fullLine) throws ParsingException {
+    String lineDefining(String fullLine) throws ParsingException {
         for (String linePattern : pattenToDefDict.keySet()) {
             Pattern pattern = Pattern.compile(linePattern);
             Matcher matcher = pattern.matcher(fullLine);
@@ -585,7 +567,7 @@ public class Parser {
      *
      * @return javadoc
      */
-    protected List<String> getJavaDoc() {
+    List<String> getJavaDoc() {
         return javaDoc;
     }
 
@@ -620,7 +602,7 @@ public class Parser {
      * @return the if while scope
      * @throws ParsingException thrown if the condition isn't valid
      */
-    protected ScopeC ParseIfWhile(String line, ScopeC scope) throws ParsingException {
+    ScopeC ParseIfWhile(String line, ScopeC scope) throws ParsingException {
         String conditions = extractString(line, GET_INSIDE_PERENTLESS_INFO);
         Pattern pattern = Pattern.compile(CONDITION_PATTEREN);
         Matcher matcher = pattern.matcher(conditions);
@@ -716,7 +698,7 @@ public class Parser {
      * @param type      the type to check
      * @return true iff matches
      */
-    boolean isTypeMatch(String chekedVar, String type) {
+    private boolean isTypeMatch(String chekedVar, String type) {
         Pattern pattern = Pattern.compile(varTypeDict.get(type));
         Matcher matcher = pattern.matcher(chekedVar);
         return matcher.matches();
