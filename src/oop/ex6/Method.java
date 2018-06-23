@@ -5,7 +5,7 @@ import java.util.ArrayList;
 /**
  * A method object represents an method in the sjava file
  */
-public class Method extends ScopeC {
+public class Method extends MScope {
     //constants
     private ArrayList<Variables> arguments;
     private String name;
@@ -17,9 +17,8 @@ public class Method extends ScopeC {
      * @param father the father of this method
      * @param arguments the variable arguments of the method
      * @param name the name of the method
-     * @throws ParsingException thrown if the var arguments were illegal
      */
-    Method(ScopeC father, ArrayList<Variables> arguments, String name) throws ParsingException {
+    Method(MScope father, ArrayList<Variables> arguments, String name) {
         super(father);
         this.name = name;
         this.isCalled = false;
@@ -32,7 +31,7 @@ public class Method extends ScopeC {
      * @return true iff the method was called
      */
 
-    public boolean isCalled() {
+     boolean isCalled() {
         return isCalled;
     }
 
@@ -40,7 +39,7 @@ public class Method extends ScopeC {
      * Check if the method got returned
      * @return true iff the method got returned
      */
-    public boolean GotReturn() {
+     boolean GotReturn() {
         return gotReturn;
     }
 
@@ -48,7 +47,7 @@ public class Method extends ScopeC {
      * Sets the got return
      * @param gotReturn boolean arg determines whether the method was called
      */
-    public void setGotReturn(boolean gotReturn) {
+     void setGotReturn(boolean gotReturn) {
         this.gotReturn = gotReturn;
     }
 
@@ -68,7 +67,7 @@ public class Method extends ScopeC {
      * Get's the arguments of the method
      * @return the arguments
      */
-    public ArrayList<Variables> getArguments() {
+     ArrayList<Variables> getArguments() {
         return arguments;
     }
 
@@ -82,12 +81,12 @@ public class Method extends ScopeC {
 
     /**
      * Runs the method if it was called
-     * @param scopeC the scope the method is called
+     * @param MScope the scope the method is called
      * @throws ParsingException if the method was illegal
      */
-    protected void runMethod(ScopeC scopeC) throws ParsingException {
-        ScopeC father = this.getFather();
-        if(scopeC == this) {
+     void runMethod(MScope MScope) throws ParsingException {
+        MScope father = this.getFather();
+        if(MScope == this) {
             return;
         }
         isCalled = true;

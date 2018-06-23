@@ -23,12 +23,14 @@ public class Sjavac {
      * @param args the args for the program. index 0 is the file path.
      */
     public static void main(String[] args) {
-        List<String> fileToStringArr = null;
+        List<String> fileToStringArr;
+        Parser parser = Parser.getParser();
         try {
-            fileToStringArr = Facade.convertToStringArr(args[0]);
+            fileToStringArr = parser.convertToStringArr(args[0]);
         }catch (IOException e){
             System.out.println(IOEXCEPTION);
             System.err.println(e.getMessage() + WHITESPACE + DOESN_T_EXIST);
+            return;
         }
 
         try {

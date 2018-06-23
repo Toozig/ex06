@@ -4,7 +4,7 @@ package oop.ex6;
  * Represents a line in the sjava file
  */
 public class Line {
-    private TypeFactory typeFactory;
+    private LineTypeFactory lineTypeFactory;
     private String commandline;
 
     /**
@@ -14,18 +14,18 @@ public class Line {
      */
     Line(String commandline,String commandType){
         this.commandline = commandline;
-        typeFactory = TypeFactory.valueOf(commandType);
+        lineTypeFactory = LineTypeFactory.valueOf(commandType);
 
     }
 
     /**
      * Interpret's the line
      * @param scope the scope the line is in
-     * @return the scope that the typeFactory returned with the updated scope
+     * @return the scope that the lineTypeFactory returned with the updated scope
      * @throws ParsingException if the line was illegal
      */
-    protected ScopeC interpret(ScopeC scope) throws ParsingException {
-        return typeFactory.interpret(scope,commandline);
+    protected MScope interpret(MScope scope) throws ParsingException {
+        return lineTypeFactory.interpret(scope,commandline);
     }
 
 }

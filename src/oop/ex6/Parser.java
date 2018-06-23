@@ -1,17 +1,23 @@
 package oop.ex6;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.nio.file.Paths.get;
+
 
 /**
  * Parses the lines in the file and checks it's validity
  */
 public class Parser {
+
+    private static Parser parser = null;
     //Constants
     final static private String INVALID_NAME = "Invalid name";
     final static private String GET_METHOD_NAME_REGEX = "\\s*(.*)\\s*\\(";
@@ -89,6 +95,7 @@ public class Parser {
     final static private int VALUE = 3;
     final static private int ARGUMENT = 1;
     final static private String ASSIGNINGREGEX = "([A-Za-z0-9_]*)\\s*(=\\s*(([A-Za-z0-9_.-]+)|(\".*\")|('.')))?\\s*";
+    private static final String VALID_BOOLEAN_REGEX_EXP = "(\\s*\\-?\\d+(\\.\\d+)?\\s*)|(\\s*((true)|(false))\\s*)";
     final static private int DATAINDEX = 1;
     final static private int NUMOFARGSIFFINAL = 3;
     final static private int FINALINDEX = 0;
@@ -96,19 +103,23 @@ public class Parser {
     final static private int NAMEINDEXIFFINAL = 2;
     final static private int MINIMALNUMOFARGS = 2;
     //Attributes
-    private List<String> javaDoc;
     private static HashMap<String, String> pattenToDefDict;
     private static HashMap<String, String> varTypeDict;
+
 
 
     /**
      * constructor of the parser class
      */
-    Parser() {
-        javaDoc = null;
+    private Parser() {
     }
 
-    public static final String VALID_BOOLEAN_REGEX_EXP = "(\\s*\\-?\\d+(\\.\\d+)?\\s*)|(\\s*((true)|(false))\\s*)";
+    static Parser getParser(){
+        if(parser == null){
+            parser = new Parser();
+        }
+        return parser;
+    }
 
     //creates dictionary of pattens and their meaning
     static {
@@ -155,7 +166,7 @@ public class Parser {
      * @param scope the current scope
      * @throws ParsingException thrown if assigning isn't legal
      */
-     void assignVar(String line, ScopeC scope) throws ParsingException {
+     void assignVar(String line, MScope scope) throws ParsingException {
         String[] varLine = line.split(COMMA);
         varLine[varLine.length - ONE] = varLine[varLine.length - ONE].replace(END_STATEMENT, EMPTYSTRING);
         for (String var : varLine) {
@@ -219,26 +230,20 @@ public class Parser {
                     if (var[ONE].equals(methodVar.getName())) {
                         throw new ParsingException(EXISTING_VAR);
                     }
-
                 }
                 if(var.length== NUMOFARGSIFFINAL){
                     isFinal = var[FINALINDEX].equals(FINAL);
                     type = var[TYPEINDEXIFFINAL];
                     name = var[NAMEINDEXIFFINAL];
                 }
-
                 if (isNameNotValid(var[METHODVARINDEXNAME])) {
                     throw new ParsingException(INVALID_NAME);
                 }
-
-
                 variable = new Variables(name, type, true, isFinal);
                 finalVars.add(variable);
             } else {
                 throw new ParsingException(INCOMPATIBLE_VAR_DECELERATION);
             }
-
-
         }
         return finalVars;
     }
@@ -252,7 +257,7 @@ public class Parser {
      * @return the exist var if exists
      * @throws ParsingException throws an exception if doesn't exist
      */
-    private Variables getExistingVar(ScopeC scope, String varValue, String type) throws ParsingException {
+    private Variables getExistingVar(MScope scope, String varValue, String type) throws ParsingException {
         Variables existVar = scope.getVariable(varValue);
         if (existVar != null && existVar.getType().equals(type)) {
             return existVar;
@@ -270,7 +275,7 @@ public class Parser {
      * @return the vars list
      * @throws ParsingException thrown if something in the var deceleration or assignment was wrong
      */
-    ArrayList<Variables> parseVar(String line, ScopeC scope) throws ParsingException {
+    ArrayList<Variables> parseVar(String line, MScope scope) throws ParsingException {
         ArrayList<Variables> vars = new ArrayList<>();
         String[] varLine = line.split(COMMA);
         boolean isInitialized = false;
@@ -303,7 +308,7 @@ public class Parser {
      * @return return Scope of the created method
      * @throws ParsingException if something in the method deceleration was illegal
      */
-    Method parseMethodDeceleration(String line, ScopeC scope) throws ParsingException {
+    Method parseMethodDeceleration(String line, MScope scope) throws ParsingException {
         String methodVars = extractString(line, GET_INSIDE_PERENTLESS_INFO).trim();
         Pattern pattern;
         Matcher matcher;
@@ -329,7 +334,7 @@ public class Parser {
      * @return the updated method
      * @throws ParsingException if something is incompatible with the call and the original method
      */
-    Method parseMethodCall(ScopeC scope, String line) throws ParsingException {
+    Method parseMethodCall(MScope scope, String line) throws ParsingException {
         String methodName = extractString(line, GET_METHOD_NAME_REGEX);
         methodName = methodName.trim();
         Method method = scope.getMethod(methodName);
@@ -414,7 +419,7 @@ public class Parser {
      * @throws ParsingException if the data or the name is wrong
      */
 
-    private Variables createVar(String[] line, boolean isInitialized, String type, Boolean isFinal, ScopeC scope,
+    private Variables createVar(String[] line, boolean isInitialized, String type, Boolean isFinal, MScope scope,
                                 ArrayList<Variables> vars) throws ParsingException {
         String name = line[ZERO];
         if (line.length > PROPPERLENGTH) {
@@ -452,7 +457,7 @@ public class Parser {
      * @return true iff another identical var exists
      */
 
-    private boolean isThereAnotherVarIdentical(String name, ScopeC scope, ArrayList<Variables> vars) {
+    private boolean isThereAnotherVarIdentical(String name, MScope scope, ArrayList<Variables> vars) {
         ArrayList<Variables> allVars = new ArrayList<>();
         allVars.addAll(scope.getVarArray());
         allVars.addAll(vars);
@@ -515,7 +520,7 @@ public class Parser {
      * @param scope   the current scope
      * @return true iff there's an existing var with that name and type
      */
-    private boolean CheckIfExistVar(String varData, String type, ScopeC scope) {
+    private boolean CheckIfExistVar(String varData, String type, MScope scope) {
         Variables existVar = scope.getVariable(varData);
         if (existVar != null) {
             if (TypeIsValidForBooleanArg(type, existVar)) {
@@ -554,22 +559,13 @@ public class Parser {
                 if (lineEnd(fullLine, lineDef)) {
                     return lineDef;
                 } else {
-                    throw new ParsingException(INVALID_LINE); //todo exception handling
+                    throw new ParsingException(INVALID_LINE);
                 }
             }
         }
         return LINE_ERROR;
     }
 
-
-    /**
-     * Gets the javadoc
-     *
-     * @return javadoc
-     */
-    List<String> getJavaDoc() {
-        return javaDoc;
-    }
 
     /**
      * Checks if the end of a line is legal
@@ -602,7 +598,7 @@ public class Parser {
      * @return the if while scope
      * @throws ParsingException thrown if the condition isn't valid
      */
-    ScopeC ParseIfWhile(String line, ScopeC scope) throws ParsingException {
+    MScope ParseIfWhile(String line, MScope scope) throws ParsingException {
         String conditions = extractString(line, GET_INSIDE_PERENTLESS_INFO);
         Pattern pattern = Pattern.compile(CONDITION_PATTEREN);
         Matcher matcher = pattern.matcher(conditions);
@@ -614,23 +610,23 @@ public class Parser {
             condition = condition.trim();
             if (isConditionValid(scope, condition)) break;
         }
-        return new ScopeC(scope);
+        return new MScope(scope);
     }
 
 
     /**
      * checks if a condition in if\while block is a valid condition.
      *
-     * @param scopeC    the current scope
+     * @param MScope    the current scope
      * @param condition the condition to check
      * @return true iff the condition is valid
      * @throws ParsingException thrown if the condition isn't valid
      */
-    private boolean isConditionValid(ScopeC scopeC, String condition) throws ParsingException {
+    private boolean isConditionValid(MScope MScope, String condition) throws ParsingException {
         condition = condition.trim();
-        Method method = scopeC.getScopesMethod();
-        if (!(isConditionTextValid(condition, scopeC))) {
-            Variables var = scopeC.getVariable(condition); // condition might be variable
+        Method method = MScope.getScopesMethod();
+        if (!(isConditionTextValid(condition, MScope))) {
+            Variables var = MScope.getVariable(condition); // condition might be variable
             if (var == null) {
                 throw new ParsingException(INVALID_BOOLEAN_ARGUMENT);
             }
@@ -638,7 +634,7 @@ public class Parser {
             if (isaBooleanArgValid(var, method.isCalled(), method)) {
                 throw new ParsingException(INVALID_BOOLEAN_ARGUMENT);
             }
-            if (!method.isCalled() || isConditionTextValid(condition, scopeC)) {
+            if (!method.isCalled() || isConditionTextValid(condition, MScope)) {
                 return true;
             }
             throw new ParsingException(INVALID_BOOLEAN_ARGUMENT);
@@ -668,10 +664,10 @@ public class Parser {
      * checks if a string of condition is a valid argument.
      *
      * @param condition the condition to check
-     * @param scopeC    current scope
+     * @param MScope    current scope
      * @return true iff condition is valid
      */
-    private boolean isConditionTextValid(String condition, ScopeC scopeC) {
+    private boolean isConditionTextValid(String condition, MScope MScope) {
         Pattern pattern;
         Matcher matcher;
         pattern = Pattern.compile(BOOLEAN_EXP);
@@ -679,7 +675,7 @@ public class Parser {
         if (matcher.matches()) {
             return true;
         }
-        Variables var = scopeC.getVariable(condition);
+        Variables var = MScope.getVariable(condition);
         if (var == null) {
             return false;
         }
@@ -703,5 +699,16 @@ public class Parser {
         Matcher matcher = pattern.matcher(chekedVar);
         return matcher.matches();
 
+    }
+
+    /**
+     * This method takes a text file and turns it into an array of String, each index contains line from the txt
+     * @param path the path of the file
+     * @return Array of Strings
+     * @throws IOException thrown if the file doesn't exist
+     */
+     List<String> convertToStringArr(String path) throws IOException {
+        Path filePath = get(path);
+        return Files.readAllLines(filePath);
     }
 }

@@ -5,12 +5,12 @@ import java.util.ArrayList;
 /**
  * Represents a scope in the sjava file
  */
-public class ScopeC {
+public class MScope {
     //Attributes
     private static final String NOSUCHMETHODEXIST = "No such method exist";
-    private ScopeC father;
+    private MScope father;
     private ArrayList<Variables> varArray;
-    private ArrayList<ScopeC> innerScopeArr;
+    private ArrayList<MScope> innerScopeArr;
     private ArrayList<Method> methodArr;
     private ArrayList<Line> scopeLines;
 
@@ -26,7 +26,7 @@ public class ScopeC {
      * Constructs a scope object
      * @param father the father of this scope (the scope "above" it)
      */
-    ScopeC(ScopeC father) {
+    MScope(MScope father) {
         varArray = new ArrayList<>();
         this.father = father;
         this.innerScopeArr = new ArrayList<>();
@@ -47,7 +47,7 @@ public class ScopeC {
      * Get's the father of the scope
      * @return the father of the scope
      */
-    public ScopeC getFather() {
+    public MScope getFather() {
         return father;
     }
 
@@ -100,7 +100,7 @@ public class ScopeC {
      * @return true iff the var is in the global scope
      */
     protected boolean isVarInTheGlobalScope(Variables var) {
-        ScopeC curScope = this;
+        MScope curScope = this;
         while (curScope.father != null) {
             curScope = curScope.father;
         }
@@ -117,7 +117,7 @@ public class ScopeC {
      * @throws ParsingException thrown if there's no such method
      */
     protected Method getMethod(String methodName) throws ParsingException {
-        ScopeC globalScope = this;
+        MScope globalScope = this;
         while (globalScope.getFather() != null) {
             globalScope = globalScope.getFather();
         }
@@ -135,7 +135,7 @@ public class ScopeC {
      * Set's the scope's father
      * @param father the father to set
      */
-    public void setFather(ScopeC father) {
+    public void setFather(MScope father) {
         this.father = father;
     }
 

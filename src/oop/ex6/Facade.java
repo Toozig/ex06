@@ -37,10 +37,10 @@ public class Facade {
      * @throws ParsingException thrown if something in the method lines were illegal
      */
     private static Method createMethod(List<String> javadoc, int index, Line line,
-                                       ScopeC globalScope) throws ParsingException {
+                                       MScope globalScope) throws ParsingException {
         Method method = (Method) line.interpret(globalScope);
         int scopeOpen = SCOPE_OPEN_PARENTHESES;
-        Parser parser = new Parser();
+        Parser parser = Parser.getParser();
 
         for (int i = index + INDEX_START; i < javadoc.size(); i++) {
             String commandLine = javadoc.get(i);
@@ -104,14 +104,14 @@ public class Facade {
     // create the global scope of of the java doc
 
     /**
-     * Creates the global scope of the file
+     * Checks if the given Sjava file is valid
      * @param file the file in form of List of string
-     * @return the global scope
+     * @return true if file is valid. exception otherwise.
      * @throws ParsingException if one of the lines was illegal
      */
      static Boolean isSjavaFileValid(List<String> file) throws ParsingException{
-        ScopeC curScope = new ScopeC(null);
-        Parser parser = new Parser();
+        MScope curScope = new MScope(null);
+        Parser parser = Parser.getParser();
          for (int i = ZERO; i < file.size(); i++) {
             String commandLine = file.get(i);
             String lineType = parser.lineDefining(commandLine);
@@ -128,7 +128,7 @@ public class Facade {
         return areMethodsValid(curScope);
     }
 
-    private static boolean areMethodsValid(ScopeC curScope) throws ParsingException {
+    private static boolean areMethodsValid(MScope curScope) throws ParsingException {
         for (Method method : curScope.getMethodArr()) {
             curScope = method;
             for (Line line : method.getScopeLines()) {
@@ -139,15 +139,6 @@ public class Facade {
     }
 
 
-    /**
-     * This method takes a text file and turns it into an array of String, each index contains line from the txt
-     * @param path the path of the file
-     * @return Array of Strings
-     * @throws IOException thrown if the file doesn't exist
-     */
-     static List<String> convertToStringArr(String path) throws IOException {
-        Path filePath = get(path);
-        return Files.readAllLines(filePath);
-    }
+
 
 }
